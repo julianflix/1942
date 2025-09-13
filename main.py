@@ -28,6 +28,11 @@ KAMIKAZE_LOCK_DY = 600          # vertical “in range” to start boost
 ENEMY_BULLET_SPEED = 300.0
 #ENEMY_FIRE_COOLDOWN = (1.2, 2.4)
 ENEMY_FIRE_COOLDOWN = (0.5, 1)
+
+SHOOTER_HMOVE_SPEED = 160.0   # max horizontal speed (px/s)
+SHOOTER_TRACK_GAIN  = 1.0     # how aggressively they chase your X (0.5–1.5 feels good)
+
+
 SPAWN_ROW_MS = 800
 DROP_CHANCE = 0.35
 DROP_TYPES = ["health", "ammo", "enhanced", "fan"]  # added "fan"
@@ -173,12 +178,30 @@ class Enemy(pygame.sprite.Sprite):
             kind = random.choice(DROP_TYPES); drops_group.add(Drop(self.rect.centerx, self.rect.centery, kind))
 
 class ShooterEnemy(Enemy):
-    def __init__(self, x, y, img, hp=3): super().__init__(x,y,img,hp)
+    def __init__(self, x, y, img, hp=3):
+        super().__init__(x, y, img, hp)
+        self.target_ref = None  # set by spawner
+
     def update(self, dt, bullets_group=None):
-        super().update(dt); self.fire_t -= dt
+        # --- horizontal tracking to follow player's X ---
+        if self.target_ref is not None:
+            dx = self.target_ref.rect.centerx - self.rect.centerx
+            # convert desired offset to a capped horizontal velocity
+            vx = max(-SHOOTER_HMOVE_SPEED, min(SHOOTER_HMOVE_SPEED, dx * SHOOTER_TRACK_GAIN))
+            self.rect.x += int(vx * dt)
+            # keep inside screen bounds
+            if self.rect.left < 0: self.rect.left = 0
+            if self.rect.right > WIDTH: self.rect.right = WIDTH
+
+        # --- vertical drift and base behavior ---
+        super().update(dt)
+
+        # --- straight shooting (unchanged) ---
+        self.fire_t -= dt
         if bullets_group is not None and self.fire_t <= 0:
             self.fire_t = random.uniform(*ENEMY_FIRE_COOLDOWN)
-            bullets_group.add(Bullet(self.rect.centerx, self.rect.bottom, ENEMY_BULLET_SPEED, color=WHITE, friendly=False))
+            bullets_group.add(Bullet(self.rect.centerx, self.rect.bottom,
+                                     ENEMY_BULLET_SPEED, color=WHITE, friendly=False))
 
 class KamikazeEnemy(Enemy):
     def __init__(self, x, y, img, hp=2):
@@ -324,6 +347,7 @@ class LevelTimeline:
             )
         elif letter == "S":
             e = ShooterEnemy(ev.cx, ev.cy, self.img_shooter)
+            e.target_ref = player_ref  # so it can track the player’s X
         elif letter == "K":
             e = KamikazeEnemy(ev.cx, ev.cy, self.img_kamikaze); e.target_ref = player_ref
         else:
