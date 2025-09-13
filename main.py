@@ -27,10 +27,13 @@ KAMIKAZE_LOCK_DY = 300          # vertical “in range” to start boost
 
 ENEMY_BULLET_SPEED = 300.0
 #ENEMY_FIRE_COOLDOWN = (1.2, 2.4)
-ENEMY_FIRE_COOLDOWN = (0.5, 0.7)
+ENEMY_FIRE_COOLDOWN = (0.5, 1)
 SPAWN_ROW_MS = 800
 DROP_CHANCE = 0.35
 DROP_TYPES = ["health", "ammo", "enhanced", "fan"]  # added "fan"
+# Weighted drop table: fan shows up twice as often as the others.
+DROP_WEIGHTS = {"health": 1, "ammo": 2, "enhanced": 2, "fan": 1.5}
+
 
 SAFE_ZONE_TAIL_MS = 5000
 WHITE=(255,255,255); BLACK=(0,0,0); GREEN=(0,220,0); RED=(220,40,40); YELLOW=(250,220,80); BLUE=(60,160,255); GRAY=(100,100,100)
@@ -384,6 +387,10 @@ class Game:
                 if e.key in (pygame.K_ESCAPE, pygame.K_q): self.running=False
                 elif e.key == pygame.K_p: self.paused = not self.paused
                 elif e.key == pygame.K_F1: self.debug = not self.debug
+                elif e.key == pygame.K_f:  # press F to spawn a fan drop at player for testing
+                    px, py = self.player_sprite.rect.center
+                    self.drops.add(Drop(px, py - 20, "fan"))
+
         keys = pygame.key.get_pressed()
         if not self.paused:
             self.player_sprite.update(0, keys)
@@ -407,7 +414,16 @@ class Game:
                         enemy.kill()
                         cx, cy = enemy.rect.center
                         if random.random() < DROP_CHANCE:
-                            kind = random.choice(DROP_TYPES); self.drops.add(Drop(cx, cy, kind))
+                            # weighted random
+                            pool = []
+                            for k, w in DROP_WEIGHTS.items():
+                                pool.extend([k] * int(max(1, w)))
+                            kind = random.choice(pool)
+                            self.drops.add(Drop(cx, cy, kind))
+
+                        #if random.random() < DROP_CHANCE:
+                            #kind = random.choice(DROP_TYPES); self.drops.add(Drop(cx, cy, kind))
+
         if self.player_sprite.invuln_t <= 0:
             if pygame.sprite.spritecollideany(self.player_sprite, self.enemy_bullets) or pygame.sprite.spritecollideany(self.player_sprite, self.enemies):
                 px, py = self.player_sprite.rect.center; alive = self.player_sprite.damage()
@@ -465,6 +481,11 @@ class Game:
         now = time.perf_counter()
         if self.player_sprite.has_enhanced(now):
             rem = max(0.0, self.player_sprite.enhanced_until - now); enh_s = self.font.render(f"Enhanced: {rem:0.1f}s", True, YELLOW); surf.blit(enh_s, (8, 30))
+        if self.player_sprite.has_fan(now):
+            rem2 = max(0.0, self.player_sprite.fan_until - now)
+            fan_s = self.font.render(f"Diagonal: {rem2:0.1f}s", True, YELLOW)
+            surf.blit(fan_s, (8, 52))  # adjust Y if it overlaps
+
         if self.paused:
             p = self.bigfont.render("PAUSED - P to resume, Q/Esc to quit", True, WHITE); surf.blit(p, p.get_rect(center=(WIDTH//2, HEIGHT//2)))
         if self.debug:
