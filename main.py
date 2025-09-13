@@ -148,134 +148,161 @@ def connected_components(grid: list[str]) -> list[dict]:
     return comps
 
 # ------------ Scrolling background --------------
+def _ui_positions():
+    # recompute every draw in case of resize (pygbag can rescale canvas)
+    joy_pos = (_UI_SIDE_MARGIN, HEIGHT - _UI_BOTTOM_MARGIN)
+    fire_pos = (WIDTH - _UI_SIDE_MARGIN, HEIGHT - _UI_BOTTOM_MARGIN)
+    return joy_pos, fire_pos
 
 class TouchControls:
     """
-    Multitouch controls that work in pygbag:
-      - One finger on the left circle = analog movement vector
-      - Any finger on the right circle = fire
-    Also supports mouse fallback (desktop): left-drag on stick, right-click (or left in fire circle) to fire.
+    Dual-input (mouse + multitouch) virtual joystick + fire button.
+    Works on desktop and pygbag. Keeps separate pointer IDs so two-finger
+    control is reliable on mobile.
     """
     def __init__(self):
-        self.stick_id = None          # active finger id for the stick
-        self.stick_center = pygame.Vector2(JOY_BASE_POS)
-        self.stick_knob = pygame.Vector2(JOY_BASE_POS)
-        self.stick_vec = pygame.Vector2(0, 0)   # normalized (-1..1)
-        self.fire_ids = set()         # finger ids currently pressing fire
+        # pointer_id -> where it started and what it's controlling
+        self.active = {}  # {id: {"kind":"joy"/"fire", "start":(x,y)}}
+        self.joy_vec = (0.0, 0.0)
+        self.fire_held = False
 
-        # Pre-make semi-transparent surfaces for pretty UI
-        self.base_surf = pygame.Surface((JOY_BASE_R*2, JOY_BASE_R*2), pygame.SRCALPHA)
-        pygame.draw.circle(self.base_surf, (255,255,255, UI_ALPHA), (JOY_BASE_R, JOY_BASE_R), JOY_BASE_R, 4)
+        # prebuild UI surfaces
+        self._joy_base = pygame.Surface((JOY_BASE_R*2, JOY_BASE_R*2), pygame.SRCALPHA)
+        self._joy_knob = pygame.Surface((JOY_KNOB_R*2, JOY_KNOB_R*2), pygame.SRCALPHA)
+        self._fire_surf = None  # built in draw()
+        pygame.draw.circle(self._joy_base, (255,255,255,UI_ALPHA), (JOY_BASE_R, JOY_BASE_R), JOY_BASE_R, 2)
+        pygame.draw.circle(self._joy_knob, (255,255,255,UI_ALPHA), (JOY_KNOB_R, JOY_KNOB_R), JOY_KNOB_R)
 
-        self.knob_surf = pygame.Surface((JOY_KNOB_R*2, JOY_KNOB_R*2), pygame.SRCALPHA)
-        pygame.draw.circle(self.knob_surf, (200,220,255, UI_ALPHA), (JOY_KNOB_R, JOY_KNOB_R), JOY_KNOB_R)
-
-        self.fire_surf = pygame.Surface((FIRE_R*2, FIRE_R*2), pygame.SRCALPHA)
-        pygame.draw.circle(self.fire_surf, (*FIRE_COLOR, UI_ALPHA), (FIRE_R, FIRE_R), FIRE_R)
-        pygame.draw.circle(self.fire_surf, (255,255,255, UI_ALPHA), (FIRE_R, FIRE_R), FIRE_R, 4)
-
+    # ------- helpers -------
     @staticmethod
-    def _norm_to_px(nx, ny):
-        # Pygame touch events (FINGER*) give normalized coords in [0,1]
-        return (nx * WIDTH, ny * HEIGHT)
+    def _dist(ax, ay, bx, by):
+        dx, dy = ax-bx, ay-by
+        return math.hypot(dx, dy)
 
-    @staticmethod
-    def _in_circle(px, py, cx, cy, r):
-        dx, dy = px - cx, py - cy
-        return dx*dx + dy*dy <= r*r
+    def _which_zone(self, x, y):
+        joy_pos, fire_pos = _ui_positions()
+        # fire first so taps near RH side don't grab stick
+        if self._dist(x, y, *fire_pos) <= 28:  # FIRE_R
+            return "fire"
+        if self._dist(x, y, *joy_pos) <= JOY_BASE_R:
+            return "joy"
+        return None
 
+    def _update_joy_from(self, x, y):
+        joy_pos, _ = _ui_positions()
+        dx = x - joy_pos[0]
+        dy = y - joy_pos[1]
+        # clamp to circle
+        mag = math.hypot(dx, dy)
+        if mag > 0:
+            nx = dx / max(1e-6, JOY_BASE_R)
+            ny = dy / max(1e-6, JOY_BASE_R)
+            # stick vector normalized to [-1,1] within base radius
+            l = math.hypot(nx, ny)
+            if l > 1.0:
+                nx /= l; ny /= l
+        else:
+            nx = ny = 0.0
+        # deadzone
+        if math.hypot(nx, ny) < JOY_DEADZONE:
+            nx = ny = 0.0
+        self.joy_vec = (max(-1.0, min(1.0, nx)), max(-1.0, min(1.0, ny)))
+        # Convenience: single-entry dispatcher so Game can just forward events
     def handle_event(self, e):
-        et = e.type
+        if e.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION):
+            self.handle_mouse_event(e)
+        elif e.type in (pygame.FINGERDOWN, pygame.FINGERMOTION, pygame.FINGERUP):
+            self.handle_finger_event(e)
 
-        # --- Touch (multitouch) ---
-        if et in (pygame.FINGERDOWN, pygame.FINGERMOTION, pygame.FINGERUP):
-            fx, fy = self._norm_to_px(e.x, e.y)
-            fid = e.finger_id
+    # Back-compat with your Game.update() calls
+    def get_vector(self):
+        jx, jy = self.joy_vec
+        return pygame.Vector2(jx, jy)
 
-            if et == pygame.FINGERDOWN:
-                if self._in_circle(fx, fy, *JOY_BASE_POS, JOY_BASE_R) and self.stick_id is None:
-                    # grab stick
-                    self.stick_id = fid
-                    self._update_stick(fx, fy)
-                elif self._in_circle(fx, fy, *FIRE_POS, FIRE_R):
-                    self.fire_ids.add(fid)
+    def is_firing(self):
+        return self.fire_held
+    # ------- public API for events -------
+    def handle_mouse_event(self, e):
+        # Treat mouse as pointer id = -1
+        if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+            x, y = e.pos
+            k = self._which_zone(x, y)
+            if k:
+                self.active[-1] = {"kind": k}
+                if k == "joy":
+                    self._update_joy_from(x, y)
+                elif k == "fire":
+                    self.fire_held = True
 
-            elif et == pygame.FINGERMOTION:
-                if fid == self.stick_id:
-                    self._update_stick(fx, fy)
-                # fire finger can move; as long as it stays in circle keep active, else drop
-                if fid in self.fire_ids:
-                    if not self._in_circle(fx, fy, *FIRE_POS, FIRE_R):
-                        self.fire_ids.discard(fid)
+        elif e.type == pygame.MOUSEMOTION:
+            if -1 in self.active and self.active[-1]["kind"] == "joy":
+                self._update_joy_from(*e.pos)
 
-            elif et == pygame.FINGERUP:
-                if fid == self.stick_id:
-                    self.stick_id = None
-                    self.stick_vec.update(0, 0)
-                    self.stick_knob.update(*JOY_BASE_POS)
-                self.fire_ids.discard(fid)
+        elif e.type == pygame.MOUSEBUTTONUP and e.button == 1:
+            if -1 in self.active:
+                kind = self.active[-1]["kind"]
+                del self.active[-1]
+                if kind == "joy":
+                    self.joy_vec = (0.0, 0.0)
+                elif kind == "fire":
+                    self.fire_held = False
 
-        # --- Mouse fallback (desktop testing) ---
-        elif et == pygame.MOUSEBUTTONDOWN:
-            mx, my = pygame.mouse.get_pos()
-            if e.button == 1:  # left button can control stick or fire
-                if self._in_circle(mx, my, *JOY_BASE_POS, JOY_BASE_R) and self.stick_id is None:
-                    self.stick_id = "mouse"
-                    self._update_stick(mx, my)
-                elif self._in_circle(mx, my, *FIRE_POS, FIRE_R):
-                    self.fire_ids.add("mouseL")
-            elif e.button == 3:  # right button -> fire
-                if self._in_circle(mx, my, *FIRE_POS, FIRE_R):
-                    self.fire_ids.add("mouseR")
+    def handle_finger_event(self, e):
+        # e.x, e.y are normalized [0..1] in pygbag
+        pid = int(e.finger_id) if hasattr(e, "finger_id") else int(e.touch_id)
+        x = int(e.x * WIDTH)
+        y = int(e.y * HEIGHT)
 
-        elif et == pygame.MOUSEMOTION:
-            mx, my = pygame.mouse.get_pos()
-            if self.stick_id == "mouse":
-                self._update_stick(mx, my)
+        if e.type == pygame.FINGERDOWN:
+            k = self._which_zone(x, y)
+            if k:
+                self.active[pid] = {"kind": k}
+                if k == "joy":
+                    self._update_joy_from(x, y)
+                elif k == "fire":
+                    self.fire_held = True
 
-        elif et == pygame.MOUSEBUTTONUP:
-            if e.button == 1:
-                if self.stick_id == "mouse":
-                    self.stick_id = None
-                    self.stick_vec.update(0, 0)
-                    self.stick_knob.update(*JOY_BASE_POS)
-                self.fire_ids.discard("mouseL")
-            elif e.button == 3:
-                self.fire_ids.discard("mouseR")
+        elif e.type == pygame.FINGERMOTION:
+            if pid in self.active and self.active[pid]["kind"] == "joy":
+                self._update_joy_from(x, y)
 
-    def _update_stick(self, px, py):
-        # vector from base center
-        v = pygame.Vector2(px - self.stick_center.x, py - self.stick_center.y)
-        r = JOY_BASE_R - JOY_KNOB_R*0.3  # a little margin so knob fits
-        if v.length() > r:
-            v.scale_to_length(r)
-        # knob position
-        self.stick_knob.update(self.stick_center.x + v.x, self.stick_center.y + v.y)
-        # normalized move vector (-1..1) with deadzone
-        n = pygame.Vector2(0, 0) if r <= 0 else (v / r)
-        if n.length() < JOY_DEADZONE:
-            n.update(0, 0)
-        self.stick_vec = n
+        elif e.type == pygame.FINGERUP:
+            if pid in self.active:
+                kind = self.active[pid]["kind"]
+                del self.active[pid]
+                if kind == "joy":
+                    self.joy_vec = (0.0, 0.0)
+                elif kind == "fire":
+                    self.fire_held = False
 
-    def get_vector(self) -> pygame.Vector2:
-        return self.stick_vec
+    # ------- polling -------
+    def get_axis(self):
+        # returns (x, y) in [-1..1]
+        return self.joy_vec
 
-    def is_firing(self) -> bool:
-        return len(self.fire_ids) > 0
+    def is_fire(self):
+        return self.fire_held
 
-    def draw(self, surf: pygame.Surface):
-        # base
-        bx, by = JOY_BASE_POS
-        surf.blit(self.base_surf, (bx - JOY_BASE_R, by - JOY_BASE_R))
-        # knob
-        kx, ky = int(self.stick_knob.x), int(self.stick_knob.y)
-        surf.blit(self.knob_surf, (kx - JOY_KNOB_R, ky - JOY_KNOB_R))
-        # fire button
-        fx, fy = FIRE_POS
-        surf.blit(self.fire_surf, (fx - FIRE_R, fy - FIRE_R))
-        # subtle “pressed” ring when firing
-        if self.is_firing():
-            pygame.draw.circle(surf, (255,255,255), (fx, fy), FIRE_R+4, 3)
+    # ------- draw -------
+    def draw(self, surf):
+        joy_pos, fire_pos = _ui_positions()
+        # draw fire button (build once at scale)
+        if self._fire_surf is None:
+            r = 28
+            s = pygame.Surface((r*2, r*2), pygame.SRCALPHA)
+            pygame.draw.circle(s, (255, 200, 80, UI_ALPHA), (r, r), r)
+            pygame.draw.circle(s, (255, 255, 255, UI_ALPHA), (r, r), r, 2)
+            self._fire_surf = s
+        # stick base
+        surf.blit(self._joy_base, (joy_pos[0] - JOY_BASE_R, joy_pos[1] - JOY_BASE_R))
+        # knob at current vector position, scaled within base radius
+        jx, jy = self.joy_vec
+        knob_x = int(joy_pos[0] + jx * (JOY_BASE_R - JOY_KNOB_R))
+        knob_y = int(joy_pos[1] + jy * (JOY_BASE_R - JOY_KNOB_R))
+        surf.blit(self._joy_knob, (knob_x - JOY_KNOB_R, knob_y - JOY_KNOB_R))
+        # fire
+        surf.blit(self._fire_surf, (fire_pos[0] - self._fire_surf.get_width()//2,
+                                    fire_pos[1] - self._fire_surf.get_height()//2))
 
 class ScrollingBackground:
     def __init__(self, segments, speed=50, loop=True):
@@ -715,6 +742,14 @@ class Game:
                 elif e.key == pygame.K_f:
                     px, py = self.player_sprite.rect.center
                     self.drops.add(Drop(px, py - 20, "fan"))
+            
+            elif e.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION):
+                self.controls.handle_mouse_event(e)
+
+            # --- finger -> touch controls (pygbag/mobile) ---
+            elif e.type in (pygame.FINGERDOWN, pygame.FINGERMOTION, pygame.FINGERUP):
+                self.controls.handle_finger_event(e)
+
         keys = pygame.key.get_pressed()
         if not self.paused:
             self.player_sprite.update(0, keys)
@@ -722,6 +757,16 @@ class Game:
 
     async def update(self, dt, dt_ms):
         keys = pygame.key.get_pressed(); self.player_sprite.update(dt, keys)
+        ax, ay = self.controls.get_axis()   # [-1..1]
+        if ax or ay:
+            self.player_sprite.rect.x += int(ax * PLAYER_SPEED * dt)
+            self.player_sprite.rect.y += int(ay * PLAYER_SPEED * dt)
+            self.player_sprite.rect.clamp_ip(pygame.Rect(0, 0, WIDTH, HEIGHT))
+
+        # Virtual fire (hold to auto-fire at your normal cooldown)
+        if self.controls.is_fire():
+            self.player_sprite.shoot(time.perf_counter(), self.player_bullets)
+
         move = self.controls.get_vector() * PLAYER_SPEED
         if move.length_squared() > 0:
             self.player_sprite.rect.x += int(move.x * dt)
