@@ -30,7 +30,8 @@ ENEMY_BULLET_SPEED = 300.0
 ENEMY_FIRE_COOLDOWN = (0.5, 0.7)
 SPAWN_ROW_MS = 800
 DROP_CHANCE = 0.35
-DROP_TYPES = ["health", "ammo", "enhanced"]
+DROP_TYPES = ["health", "ammo", "enhanced", "fan"]  # added "fan"
+
 SAFE_ZONE_TAIL_MS = 5000
 WHITE=(255,255,255); BLACK=(0,0,0); GREEN=(0,220,0); RED=(220,40,40); YELLOW=(250,220,80); BLUE=(60,160,255); GRAY=(100,100,100)
 
@@ -95,13 +96,22 @@ def connected_components(grid: list[str]) -> list[dict]:
     return comps
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, vy, color=YELLOW, friendly=True):
+    def __init__(self, x, y, vy, color=YELLOW, friendly=True, vx=0.0):
         super().__init__()
-        self.image = pygame.Surface((4, 10), pygame.SRCALPHA); self.image.fill(color)
-        self.rect = self.image.get_rect(center=(x,y)); self.vy = vy; self.friendly = friendly
+        self.image = pygame.Surface((4, 10), pygame.SRCALPHA)
+        self.image.fill(color)
+        self.rect = self.image.get_rect(center=(x, y))
+        self.vx = vx
+        self.vy = vy
+        self.friendly = friendly
+
     def update(self, dt):
+        self.rect.x += int(self.vx * dt)
         self.rect.y += int(self.vy * dt)
-        if self.rect.bottom < 0 or self.rect.top > HEIGHT: self.kill()
+        if (self.rect.bottom < 0 or self.rect.top > HEIGHT
+                or self.rect.right < 0 or self.rect.left > WIDTH):
+            self.kill()
+
 
 class Drop(pygame.sprite.Sprite):
     def __init__(self, x, y, kind: str):
@@ -114,10 +124,18 @@ class Drop(pygame.sprite.Sprite):
         elif kind == "ammo":
             pygame.draw.rect(self.image, BLUE, (0,0,16,16), border_radius=3)
             pygame.draw.rect(self.image, WHITE, (6,3,4,10))
-        else:
+        elif kind == "enhanced":
             pygame.draw.rect(self.image, YELLOW, (0,0,16,16), border_radius=3)
             pygame.draw.circle(self.image, WHITE, (8,8), 5, 2)
-        self.rect = self.image.get_rect(center=(x,y)); self.vy = 60
+        elif kind == "fan":  # NEW: diagonal enhancer
+            pygame.draw.rect(self.image, YELLOW, (0,0,16,16), border_radius=3)
+            pygame.draw.line(self.image, WHITE, (3,13), (13,3), 2)   # diagonal slash
+            pygame.draw.line(self.image, WHITE, (3,3), (13,13), 1)   # second faint slash
+        else:
+            pygame.draw.rect(self.image, YELLOW, (0,0,16,16), border_radius=3)
+        self.rect = self.image.get_rect(center=(x,y))
+        self.vy = 60
+
     def update(self, dt):
         self.rect.y += int(self.vy * dt)
         if self.rect.top > HEIGHT: self.kill()
@@ -217,8 +235,15 @@ class Player(pygame.sprite.Sprite):
         super().__init__(); self.base_image = img; self.image = self.base_image.copy()
         self.rect = self.image.get_rect(center=(x,y)); self.speed = PLAYER_SPEED; self.lives = PLAYER_START_LIVES
         self.invuln_t = 0.0; self.shoot_t = 0.0; self.ammo = 9999; self.enhanced_until = 0.0
+        self.fan_until = 0.0 
     def has_enhanced(self, now: float) -> bool: return now < self.enhanced_until
     def grant_enhanced(self, now: float): self.enhanced_until = max(self.enhanced_until, now + ENHANCED_WEAPON_DURATION)
+    def has_fan(self, now: float) -> bool:
+        return now < self.fan_until
+
+    def grant_fan(self, now: float):
+        self.fan_until = max(self.fan_until, now + ENHANCED_WEAPON_DURATION)
+
     def update(self, dt, keys):
         vx = vy = 0.0
         if keys[pygame.K_LEFT] or keys[pygame.K_a]: vx -= self.speed
@@ -229,15 +254,28 @@ class Player(pygame.sprite.Sprite):
         self.rect.clamp_ip(pygame.Rect(0,0,WIDTH,HEIGHT))
         if self.invuln_t > 0: self.invuln_t -= dt
     def shoot(self, now: float, bullets_group):
-        if self.shoot_t > now: return
+        if self.shoot_t > now:
+            return
         self.shoot_t = now + PLAYER_BULLET_COOLDOWN
+
         cx, cy = self.rect.centerx, self.rect.top
+
+        # --- Straight shots (existing behavior) ---
         if self.has_enhanced(now):
-            bullets_group.add(Bullet(cx, cy, -PLAYER_BULLET_SPEED, color=YELLOW, friendly=True))
-            bullets_group.add(Bullet(cx-10, cy, -PLAYER_BULLET_SPEED, color=YELLOW, friendly=True))
-            bullets_group.add(Bullet(cx+10, cy, -PLAYER_BULLET_SPEED, color=YELLOW, friendly=True))
+            # triple straight
+            bullets_group.add(Bullet(cx,     cy, -PLAYER_BULLET_SPEED, color=YELLOW, friendly=True))
+            bullets_group.add(Bullet(cx - 10, cy, -PLAYER_BULLET_SPEED, color=YELLOW, friendly=True))
+            bullets_group.add(Bullet(cx + 10, cy, -PLAYER_BULLET_SPEED, color=YELLOW, friendly=True))
         else:
+            # single straight
             bullets_group.add(Bullet(cx, cy, -PLAYER_BULLET_SPEED, color=YELLOW, friendly=True))
+
+        # --- Diagonal add-on (new fan enhancer) ---
+        if self.has_fan(now):
+            diag = PLAYER_BULLET_SPEED / math.sqrt(2)
+            bullets_group.add(Bullet(cx, cy, -diag, color=YELLOW, friendly=True, vx=-diag))  # up-left
+            bullets_group.add(Bullet(cx, cy, -diag, color=YELLOW, friendly=True, vx= diag))  # up-right
+
     def damage(self):
         if self.invuln_t > 0: return False
         self.lives -= 1; self.invuln_t = INVULN_AFTER_DEATH
@@ -381,9 +419,15 @@ class Game:
         got = pygame.sprite.spritecollide(self.player_sprite, self.drops, dokill=True)
         now = time.perf_counter()
         for d in got:
-            if d.kind == "health": self.player_sprite.lives = min(9, self.player_sprite.lives + 1)
-            elif d.kind == "ammo": self.player_sprite.ammo = min(9999, self.player_sprite.ammo + 50)
-            else: self.player_sprite.grant_enhanced(now)
+            if d.kind == "health":
+                self.player_sprite.lives = min(9, self.player_sprite.lives + 1)
+            elif d.kind == "ammo":
+                self.player_sprite.ammo = min(9999, self.player_sprite.ammo + 50)
+            elif d.kind == "enhanced":
+                self.player_sprite.grant_enhanced(now)  # existing triple-straight
+            elif d.kind == "fan":
+                self.player_sprite.grant_fan(now)       # NEW diagonals
+
         if self.safe_zone_active and self.player_sprite.rect.top <= self.safe_zone_y: self.next_level_or_win()
 
     def next_level_or_win(self):
