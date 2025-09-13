@@ -104,8 +104,9 @@ To build and run the game in a web browser:
 ## Project Structure
 
 ```
-build/
-  version.txt          # current game version (e.g., 0.9.2)
+assets/
+  background1.png
+  player.png
 levels/
   level1.txt …         # text-based level layouts
 README.md
@@ -121,10 +122,6 @@ requirements.txt
 
 - **Assets Directory**: `assets/`  
   Contains optional PNGs for player/enemies/backgrounds. If missing, the game draws simple fallbacks so it still runs.
-
-## Version
-
-The current version is tracked in **`build/version.txt`** (e.g., `0.9.2`).
 
 ## Deployment
 
