@@ -5,32 +5,101 @@
 - **Explosion animations** on kills (uses `assets/explosion_0..5.png` if available, otherwise procedural).
 - **Multi-level** flow: `levels/level1.txt` → `levels/level2.txt` → ... (auto-discovery).
 
-## Controls
-- Move: Arrow keys / W A S D
-- Shoot: Space
-- Pause: P
-- Toggle debug: F1
-- Quit: Esc / Q
+## Features
+- **Top-down shooter** with warplane controls
+- **Customizable sprites** for player and enemies
+- **Animated explosions** on enemy elimination
+- **Multi-level progression** with auto-discovered level files
+- **Pause/Resume** and **debug mode** support
+- **Safe Zone** mechanic for level completion
+- **Cross-platform** with Pygame (Windows, macOS, Linux)
 
-## Run
+## API Calls
+### Command-line Interface
 ```bash
-pip install pygame>=2.5.2
-python main.py
+python main.py --level 2
+```
+- `--level`: Start at a specific level (e.g., `--level 3`)
+
+### Key Game Functions (Internal API)
+- `Game.run()`: Starts the game loop
+- `Game.next_level()`: Loads the next level file
+- `Game.game_over()`: Handles game-over state
+- `Game.win_and_exit()`: Handles win state and exits
+
+## Components Overview
+```
+/project-root
+  ├── main.py              # Entry point
+  ├── requirements.txt   # Dependencies
+  ├── assets/              # Sprite/animation files
+  │   ├── player.png
+  │   ├── enemy_shooter.png
+  │   └── explosion_0.png...explosion_5.png
+  ├── levels/              # Level configuration files
+  │   ├── level1.txt
+  │   └── level2.txt
+  └── README.md          # This file
 ```
 
-## Assets (PNG sprites)
-Put any of these optional files in `assets/`:
-- `player.png`
-- `enemy_shooter.png`
-- `enemy_kamikaze.png`
-- `enemy_big.png`
-- `explosion_0.png` ... `explosion_5.png`
+## Prerequisites
+- Python 3.7+
+- `pygame>=2.5.2` (installed via `pip install -r requirements.txt`)
 
-If any file is missing, the game draws a clean fallback shape.
+## Installation
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/1942-lite.git
+cd 1942-lite
 
-## Level files
-Add `levels/level2.txt`, `levels/level3.txt`, ... using the ASCII-letter scheme:
-- `S` shooter, `K` kamikaze, `B` big (or any clustered letter → big)
-- `.` or space = empty
+# Install dependencies
+pip install -r requirements.txt
+```
 
-The engine loads all matching `levels/level*.txt` in ascending order and advances when you reach the **Safe Zone**.
+## Configuration
+- **Level files**: Add `levels/levelX.txt` files following the ASCII format:
+  - `S` = shooter enemy
+  - `K` = kamikaze enemy
+  - `B` = big enemy (or clustered letters)
+  - `.` or space = empty cell
+- **Assets**: Place PNGs in `assets/` for custom visuals. Missing assets use default shapes.
+
+## How to Run
+### Development
+```bash
+python main.py
+```
+### Production
+```bash
+python main.py --level 3
+```
+
+## Testing
+- Run the game and verify:
+  - Controls (arrow keys/WASD)
+  - Bullet firing (space)
+  - Level progression
+  - Explosion animations
+  - Safe zone detection
+
+## Project Structure
+```
+├── main.py              # Game entry point
+├── game.py              # Core game logic (Game class)
+├── level_parser.py      # Level file parsing
+├── assets/              # Sprite/animation assets
+├── levels/              # Level configuration files
+└── requirements.txt     # Dependency definitions
+```
+
+## Contribution Guidelines
+1. Fork the repository
+2. Create a new branch for features/fixes
+3. Add new levels to `levels/` following the ASCII format
+4. Submit a pull request with clear description
+5. Follow PEP8 style guide for code
+
+## License
+**GNU General Public License v3.0**  
+See `LICENSE` for full terms.  
+This project is free software: you can redistribute it and/or modify it under the terms of the GNU GPL.
