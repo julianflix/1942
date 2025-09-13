@@ -3,7 +3,10 @@
 ## Tree (filtered)
 
 ```
+├── assets/
 ├── build/
+│   ├── web/
+│   ├── web-cache/
 │   └── version.txt
 ├── levels/
 │   ├── level1.txt
@@ -29,89 +32,101 @@
 
 # `build/version.txt` Documentation
 
----
-
-## Overview
-
-The `build/version.txt` file is a **version control file** that stores the current version number of the application. This file is typically used during the build process to embed version information into the application, enabling users and developers to identify the exact release version.
+The `build/version.txt` file serves as a central source of truth for the **version number** of the 1942-lite project. It is used during the build process and runtime to identify the software's version, ensuring consistency across deployments and facilitating debugging and release management.
 
 ---
 
-## File Location
+## **Purpose**
 
-```
-build/version.txt
-```
-
-This file is located in the `build/` directory of the project, which is commonly used to store build artifacts and configuration files.
+- **Version Tracking**: Stores the semantic version number (e.g., `0.9.2`) to indicate the current state of the project (development, release, etc.).
+- **Build Consistency**: Ensures the same version is used across all parts of the project, including web builds and desktop execution.
+- **Runtime Identification**: The game may read this file to display the version in the UI or logs.
 
 ---
 
-## File Content
+## **File Content**
 
 ```
 0.9.2
 ```
 
-The file contains a single line with a **semantic version number** in the format `MAJOR.MINOR.PATCH`. 
-
-- **MAJOR**: 0 (indicating the project is in early development)
-- **MINOR**: 9 (feature updates)
-- **PATCH**: 2 (bug fixes)
-
-This follows [Semantic Versioning (SemVer)](https://semver.org/), a standard for versioning software.
+- **Format**: Plain text with a single line.
+- **Semantic Versioning**: Follows the `MAJOR.MINOR.PATCH` format:
+  - `0`: Development phase (pre-release).
+  - `9`: Minor features or enhancements.
+  - `2`: Bug fixes or patches.
 
 ---
 
-## Usage
+## **Relationships with Other Files**
 
-### Purpose
-- **Version Identification**: The version number is used to track the state of the application, helping users and developers understand what features or fixes are included in a release.
-- **Build Process**: During the build, this file may be read to inject the version into the application (e.g., in logs, UI, or metadata).
-- **Release Management**: Updating this file is part of the release process to indicate new versions.
-
-### Example Use Cases
-- **Displaying Version**: The application may read this file at runtime to show the version in the UI or logs.
-- **CI/CD Pipelines**: Continuous integration systems may use this file to automate versioning and deployment.
+| File                     | Role in Versioning                     |
+|--------------------------|----------------------------------------|
+| `README.md`              | Mentions the version in the project description. |
+| `main.py`                | May read this file to display the version at runtime. |
+| `requirements.txt`       | Dependencies (e.g., `pygame`, `pygbag`) are versioned separately. |
+| `build/` directory       | Contains build artifacts, including version information. |
 
 ---
 
-## Implications of Modification
+## **Usage Examples**
 
-- **Incrementing the Version**: Update the version number according to SemVer rules when:
-  - Adding new features (increment `MINOR`),
-  - Fixing bugs (increment `PATCH`),
-  - Making breaking changes (increment `MAJOR`).
-- **Build Artifacts**: Changing this file may require rebuilding the application to reflect the new version in outputs.
+### 1. **Reading the Version in Code**
+The game's main script (`main.py`) might read this file to display the version:
 
----
+```python
+with open("build/version.txt", "r") as f:
+    VERSION = f.read().strip()
+print(f"Running 1942-lite v{VERSION}")
+```
 
-## Example
-
-To update the version to `1.0.0` (a major release):
-
-1. Modify `build/version.txt`:
+### 2. **Updating the Version**
+To increment the version:
+1. Edit `build/version.txt`:
    ```
-   1.0.0
+   0.9.3
    ```
-
-2. Rebuild the application to embed the new version.
-
----
-
-## Related Files
-
-- **`requirements.txt`**: Specifies dependencies like `pygame>=2.5.2` and `pygbag`, which are required for the application to run.
-- **`main.py`**: The entry point of the application, which may read the version during initialization.
-- **`README.md`**: Contains project documentation, including setup and usage instructions.
+2. Rebuild the project for changes to take effect.
 
 ---
 
-## Best Practices
+## **Build Process Integration**
 
-- **Automate Version Updates**: Use scripts or tools (e.g., `bumpversion`, `git tags`) to manage version increments.
-- **Consistency**: Ensure the version in `version.txt` matches the version in other project metadata (e.g., `setup.py`, `package.json` if applicable).
-- **Documentation**: Update release notes or changelogs when the version changes.
+- **Web Build (pygbag)**: The version is included in the build output (`build/web/`) to ensure the browser version matches the source.
+- **Desktop Execution**: The version is embedded in the game's UI and debug logs.
+
+---
+
+## **Configuration Implications**
+
+- **Environment**: No environment variables directly affect this file. It is part of the source tree.
+- **Deployment**: Ensure `build/version.txt` is included in all distributions (desktop, web, etc.).
+- **Version Control**: This file should be committed to the repository to track changes across releases.
+
+---
+
+## **Best Practices**
+
+- **Automate Version Updates**: Use scripts or CI/CD pipelines to increment the version during releases.
+- **Semantic Versioning**: Follow [SemVer](https://semver.org/) conventions to avoid ambiguity.
+- **Consistency**: Ensure the version in `build/version.txt` matches other version references (e.g., `LICENSE`, `README.md`).
+
+---
+
+## **Example Workflow**
+
+1. **Development**:
+   - Modify game logic, update `build/version.txt` to `0.9.3`.
+   - Test changes locally and in the browser.
+
+2. **Release**:
+   - Commit changes to the repository.
+   - Run `python -m pygbag .` to build the web version.
+   - Deploy `build/web/`, `assets/`, and `levels/` to a static host.
+
+3. **Verification**:
+   - Open `index.html` in a browser.
+   - Check the game's HUD or debug overlay for the version (`0.9.3`).
 
 #### Source
 
@@ -123,121 +138,346 @@ To update the version to `1.0.0` (a major release):
 
 #### Description
 
-# 1942-lite Shooter Game
+# 1942-lite Documentation
 
-A lightweight 2D shooter game inspired by classic arcade titles, featuring player mechanics, enemy AI, power-ups, and level progression.
-
----
-
-## 📌 Overview
-
-This project is a 2D shooter game built using Python's [Pygame](https://www.pygame.org/) library. It includes:
-- Player movement and shooting
-- Enemy AI and wave-based combat
-- Power-up mechanics (e.g., enhanced fire, diagonal shooting)
-- Level progression system
-- Safe zone victory condition
-
-The game supports multiple levels, configurable difficulty, and includes a simple HUD for tracking lives, ammo, and power-up timers.
+## Overview
+**1942-lite** is a lightweight, open-source 2D top-down shooter inspired by classic arcade games like *1942*. Built using Python's **Pygame** library, it supports desktop (Windows/macOS/Linux) and web (via **pygbag**) platforms. The game features procedural level generation, power-ups, and cross-platform controls.
 
 ---
 
-## 🧰 Prerequisites
+## Key Features
 
-- Python 3.7+
-- [Pygame](https://www.pygame.org/) (`pygame>=2.5.2`)
-- [Pygbag](https://pygbag.readthedocs.io/) (for web deployment)
+### Core Gameplay
+- **Vertical Scrolling**: Navigate through waves of enemies while collecting power-ups.
+- **Power-Ups**:
+  - **Health**: Restore player health.
+  - **Ammo**: Increase shooting capacity.
+  - **Enhanced**: Switch to spread-shot or rapid-fire modes.
+  - **Fan**: Enable diagonal movement for agility.
+- **Safe Zone**: Reach the bottom of the screen to progress to the next level.
+
+### Cross-Platform Support
+- **Desktop**: Keyboard/mouse or WASD controls.
+- **Web/Mobile**: Virtual joystick (left) and fire button (right).
+- **Portability**: Built with **Pygame** for desktop and **pygbag** for web deployment.
 
 ---
 
-## 📦 Installation
+## Project Structure
 
-1. Clone the repository
-2. Install dependencies:
+```
+1942-lite/
+│
+├── assets/               # Game assets (optional)
+│   ├── background1.png   # Background image
+│   └── player.png        # Player sprite
+│
+├── levels/               # Text-based level definitions
+│   └── level1.txt        # Example level layout
+│
+├── build/                # Web build output (generated)
+│   └── web/              # WebAssembly bundle
+│
+├── README.md             # This documentation
+├── main.py               # Game entry point
+├── requirements.txt      # Python dependencies
+└── build/version.txt     # Version number (0.9.2)
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+- Python 3.x installed.
+- Basic knowledge of virtual environments.
+
+### Installation
+1. **Create a virtual environment**:
+   ```bash
+   python -m venv venv_1942
+   ```
+
+2. **Activate the environment**:
+   - Windows:
+     ```bash
+     venv_1942\Scripts\activate
+     ```
+   - macOS/Linux:
+     ```bash
+     source venv_1942/bin/activate
+     ```
+
+3. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
 ---
 
-## 🕹️ Usage
+## Playing the Game
 
-### Run the Game
+### Desktop Controls
+| Action       | Key(s)          |
+|--------------|-----------------|
+| Move         | Arrow Keys / W/A/S/D |
+| Shoot        | Space           |
+| Pause/Resume | P               |
+| Quit         | Esc / Q         |
+| Debug Overlay| F1              |
+
+### Web/Mobile Controls
+- **Left Thumb**: Virtual joystick (bottom-left).
+- **Right Thumb**: Fire button (bottom-right).
+
+---
+
+## Web Deployment (pygbag)
+
+### Build Process
+1. **Install pygbag** (if not already installed):
+   ```bash
+   pip install pygbag
+   ```
+
+2. **Build the web bundle**:
+   ```bash
+   python -m pygbag .
+   ```
+   This generates a `build/web/` directory with:
+   - `index.html` (entry point)
+   - WASM runtime
+   - Compiled assets
+
+3. **Deploy Static Files**:
+   Ensure the following are placed at the same level as `build/web/`:
+   ```
+   /your-host-root/
+     ├─ build/
+     │  └─ web/          # Generated web bundle
+     ├─ assets/          # Game assets (PNGs)
+     └─ levels/          # Level definition files
+   ```
+
+4. **Run in Browser**:
+   Open `build/web/index.html` in a browser. Use a local HTTP server for testing:
+   ```bash
+   python -m http.server
+   ```
+
+---
+
+## Configuration
+
+### Level Files
+- **Location**: `levels/` directory.
+- **Format**: Text-based files (e.g., `level1.txt`) defining enemy positions, obstacles, and objectives.
+- **Autodiscovery**: The game automatically loads `level*.txt` files.
+
+### Assets
+- **Optional**: If `assets/` is missing, the game uses default placeholders.
+- **Customization**: Replace `background1.png` and `player.png` for custom visuals.
+
+---
+
+## Technical Details
+
+### Dependencies
+- **Pygame**: For desktop rendering and input handling.
+- **pygbag**: Converts Pygame apps to WebAssembly for browser deployment.
+
+### Versioning
+- **Current Version**: `0.9.2` (see `build/version.txt`).
+
+---
+
+## Usage Examples
+
+### Run Desktop Version
 ```bash
 python main.py
 ```
 
-### Specify a Level
+### Run with Specific Level
 ```bash
 python main.py --level 3
 ```
 
----
-
-## 📁 Project Structure
-
-```
-/levels/               # Level files (level1.txt, level2.txt, etc.)
-/main.py               # Main game logic
-/README.md             # This file
-/requirements.txt      # Python dependencies
-/build/version.txt     # Version number (0.9.2)
+### Build Web Version
+```bash
+python -m pygbag .
 ```
 
 ---
 
-## 🎮 Key Features
+## Contributing
 
-- **Player Controls**: Arrow keys or touch controls (mobile/web)
-- **Shooting**: Normal and enhanced fire modes
-- **Power-Ups**:
-  - `health`: Restore 1 life
-  - `ammo`: Add 50 bullets
-  - `enhanced`: Temporary rapid-fire mode
-  - `fan`: Diagonal shooting for 3 seconds
-- **Enemies**: Various types with different behaviors
-- **Level System**: Progress through multiple levels
-- **Safe Zone**: Victory condition when reaching the bottom of the screen
+1. Fork the repository.
+2. Create a new branch for your feature/fix.
+3. Submit a pull request with detailed changes.
 
 ---
 
-## 🧠 Configuration
+## License
 
-### Level Files
-- Located in `/levels/`
-- Format: `levelX.txt` (e.g., `level1.txt`)
-- Define enemy waves, bullet patterns, and level geometry
-
-### Environment Variables
-- `LEVELS_DIR`: Directory containing level files (default: `./levels`)
+**1942-lite** is released under the [MIT License](LICENSE). See `LICENSE` for full terms.
 
 ---
 
-## 🧩 Development
+## Acknowledgments
 
-### Adding New Levels
-1. Create a new `levelX.txt` file in `/levels/`
-2. Define enemy spawn patterns and level boundaries
-
-### Contributing
-1. Fork the repository
-2. Create a new branch for your feature
-3. Submit a pull request
-
----
-
-## 📦 Version
-Current version: `0.9.2` (from `build/version.txt`)
-
----
-
-## 📄 License
-This project is open-source and distributed under the MIT License. See the [LICENSE](LICENSE) file for details.
+- **Pygame**: For 2D game development.
+- **pygbag**: For web deployment capabilities.
+- **Classic Arcade Games**: Inspiration for gameplay mechanics.
 
 #### Source
 
 ```md
+# 1942-lite
 
+A WWII top-down shooter built with Python and portable to the web using **pygbag**.
+
+## Description
+
+**1942-lite** is a modern, lightweight arcade shooter inspired by classic vertical scrollers. Pilot your plane through waves of enemy fighters, dodge bullets, collect power-ups, and reach the **Safe Zone** to clear each level. The game runs on desktop via **Pygame** and can be exported to the browser via **pygbag** (WASM), so it can be played without local installation.
+
+## Features
+
+- Classic vertical-scrolling shooter gameplay with waves and simple AI
+- Power-ups: **health**, **ammo**, **enhanced** (spread/rapid), **fan** (diagonal)
+- Level progression from text-based maps in `levels/`
+- Desktop (keyboard) and mobile/web (virtual joystick + fire button) support
+- Portable to web using **pygbag**
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.x installed on your system
+- Basic familiarity with Python and virtual environments
+
+### Installation
+
+1. Create a Python virtual environment:
+   ```bash
+   python -m venv venv_1942
+   ```
+
+2. Activate the virtual environment:
+   - On Windows:
+     ```bash
+     venv_1942\Scripts\activate
+     ```
+   - On macOS/Linux:
+     ```bash
+     source venv_1942/bin/activate
+     ```
+
+3. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+## Playing the Game
+
+### Local Play (Desktop)
+
+Run the game locally after installing dependencies:
+
+```bash
+python main.py
+```
+
+Start from a specific level (e.g. level 3):
+
+```bash
+python main.py --level 3
+```
+
+### Controls (Desktop)
+
+- **Move**: Arrow Keys or **W/A/S/D**
+- **Shoot**: **Space**
+- **Pause / Resume**: **P**
+- **Quit**: **Esc** or **Q**
+- **Debug overlay**: **F1** (toggles)
+
+### Controls (Web/Mobile)
+
+- **Left thumb**: Virtual joystick (bottom-left)
+- **Right thumb**: Fire button (bottom-right)
+
+## Web Play (Browser via pygbag)
+
+To build and run the game in a web browser:
+
+1. **Install pygbag** (inside your virtual environment, if not already installed):
+   ```bash
+   pip install pygbag
+   ```
+
+2. **Build the web bundle** from the project root:
+   ```bash
+   python -m pygbag .
+   ```
+   This generates a `build/web/` folder containing `index.html`, the WASM runtime, and compiled assets.
+
+3. **Publish static files**. For the browser build to find game data, place the following **side-by-side** on your web host or static server:
+   ```
+   /your-host-root/
+     ├─ build/
+     │  └─ web/          <-- web bundle (contains index.html)
+     ├─ assets/          <-- image/sprite PNGs used by the game
+     └─ levels/          <-- levelX.txt files used by the game
+   ```
+   The game expects `assets/` and `levels/` at the same level as `build/web/` (relative paths are used on the web).
+
+4. **Open `build/web/index.html`** in your browser (or deploy the folders to a static host and visit the deployed URL).
+
+> Tip: When testing locally in a browser, serve the directory with a simple HTTP server to avoid cross-origin issues (e.g., `python -m http.server` from the host root shown above).
+
+## Project Structure
+
+```
+assets/
+  background1.png
+  player.png
+levels/
+  level1.txt …         # text-based level layouts
+README.md
+main.py                # game entry point
+requirements.txt
+```
+
+## Configuration
+
+- **Levels Directory**: `levels/`  
+  Level files are autodiscovered (e.g., `level1.txt`, `level2.txt`, …).  
+  Use `--level N` to start from a specific level.
+
+- **Assets Directory**: `assets/`  
+  Contains optional PNGs for player/enemies/backgrounds. If missing, the game draws simple fallbacks so it still runs.
+
+## Deployment
+
+For a complete web deployment, upload **both**:
+- The contents of `build/web/` (including `index.html`)
+- The `assets/` and `levels/` folders (kept as siblings of `build/web/`)
+
+Maintaining these relative paths ensures the browser build can load images and level files.
+
+## Contributing
+
+Contributions are welcome! Feel free to open an issue or submit a pull request.
+
+## License
+
+This project is released under the **GNU GPL v3.0**. See the `LICENSE` file for details.
+
+## Acknowledgments
+
+- Inspired by classic 1942-style vertical shooters  
+- Built with Python’s **Pygame** and the **pygbag** framework for web portability
 
 ```
 
@@ -245,150 +485,93 @@ This project is open-source and distributed under the MIT License. See the [LICE
 
 #### Description
 
-# Game Documentation
+# Game Module Documentation
 
 ## Overview
-This is a 2D shooter game inspired by classic arcade titles like 1942. The game features a player ship, enemies, bullets, power-ups, and a scrolling background. The code uses Pygame for rendering and input handling, with an async game loop for smooth animations and transitions.
+The `Game` class is the core of a 2D shooter game, handling game logic, rendering, and interactions. It manages player controls, enemy AI, bullet physics, power-ups, and level progression. The game uses `pygame` for rendering and input handling, with an async loop for smooth updates.
 
-## Key Components
+---
 
-### 1. **Main Game Class: `Game`**
-The central class that manages the game state, rendering, and interactions.
+## Key Classes
 
-#### Key Methods:
-- `__init__`: Initializes game components (player, enemies, bullets, background, etc.).
-- `update`: Async method that handles game logic (movement, collisions, power-ups).
-- `render`: Draws all game elements to the screen.
-- `handle_input`: Processes keyboard, mouse, and touch inputs.
-- `next_level_or_win`: Transitions to the next level or ends the game.
+### `Game`
+**Responsibility**: Manages the game state, rendering, and interactions.
 
-#### Key Attributes:
-- `player_sprite`: The player's ship object.
+**Key Methods**:
+- `__init__(self, level_files)`: Initializes game components (player, enemies, bullets, etc.).
+- `update(self, dt, dt_ms)`: Updates game state (player movement, collisions, enemy behavior).
+- `render(self)`: Renders the game screen, including HUD and effects.
+- `next_level_or_win(self)`: Transitions to the next level or triggers a win condition.
+- `game_over(self)`: Handles game over state and displays the "GAME OVER" screen.
+
+**Attributes**:
+- `player_sprite`: The player's ship.
 - `enemies`: List of enemy sprites.
-- `player_bullets`: List of bullets fired by the player.
-- `enemy_bullets`: List of bullets fired by enemies.
-- `drops`: Power-up items that appear after defeating enemies.
+- `player_bullets`: Player's bullet projectiles.
+- `enemy_bullets`: Enemy's bullet projectiles.
+- `drops`: Power-up items (health, ammo, etc.).
 - `fx`: Explosion effects.
-- `bg`: Background object (scrolling or static).
+- `bg`: Background manager for scrolling or static backgrounds.
 
 ---
 
-### 2. **Player Sprite: `PlayerSprite`**
-Controls the player's ship, including movement, shooting, and power-ups.
+## Key Functions
 
-#### Key Methods:
-- `update`: Handles movement and shooting.
-- `shoot`: Fires bullets based on player input.
-- `damage`: Reduces player health and triggers invincibility.
-- `grant_enhanced`: Grants a temporary bullet spread power-up.
-- `grant_fan`: Grants diagonal shooting for a limited time.
+### `discover_level_files(level_dir=LEVELS_DIR)`
+**Purpose**: Discovers level files in the `levels` directory.
 
-#### Power-Ups:
-- `enhanced`: Wider bullet spread for 5 seconds.
-- `fan`: Diagonal shooting for 5 seconds.
-- `health`: Increases player lives.
-- `ammo`: Increases bullet capacity.
+**Inputs**:
+- `level_dir`: Directory path containing level files (default: `LEVELS_DIR`).
 
----
+**Returns**:
+- Sorted list of level file paths (e.g., `["level1.txt", "level2.txt", ...]`).
 
-### 3. **Enemy Classes**
-Various enemy types with different behaviors.
-
-#### Example:
-- `ShooterEnemy`: Fires bullets periodically.
-- `Enemy`: Base class for all enemies, handling movement and collision.
-
-#### Key Features:
-- Enemies spawn from level files.
-- Collisions with bullets or the player trigger damage.
-- Defeated enemies drop power-ups.
-
----
-
-### 4. **Bullet System**
-Handles both player and enemy bullets.
-
-#### Key Features:
-- **Player Bullets**: Fired on key press or auto-fire.
-- **Enemy Bullets**: Fired by `ShooterEnemy` at intervals.
-- **Collision Detection**: Checks for hits against enemies and the player.
-
----
-
-### 5. **Power-Ups (Drops)**
-Collectible items that appear after defeating enemies.
-
-#### Types:
-- `health`: +1 life.
-- `ammo`: +50 bullets.
-- `enhanced`: Temporary bullet spread.
-- `fan`: Temporary diagonal shooting.
-
----
-
-### 6. **Background System**
-Manages scrolling or static backgrounds.
-
-#### Key Methods:
-- `update`: Updates background position.
-- `draw`: Renders the background to the screen.
-
----
-
-### 7. **Game Loop**
-The async `update` method handles:
-- Input processing
-- Movement and collision checks
-- Power-up collection
-- Level transitions
-- Rendering
-
----
-
-## Configuration and Constants
-
-### Game Settings
+**Usage**:
 ```python
-PLAYER_SPEED = 300  # Pixels per second
-BULLET_SPEED = 500
-ENEMY_SPEED = 100
-ENEMY_SPAWN_INTERVAL = 2.0  # Seconds
-DROP_CHANCE = 0.3  # 30% chance for power-ups
-```
-
-### Colors
-```python
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-GRAY = (128, 128, 128)
-```
-
-### Power-Up Weights
-```python
-DROP_WEIGHTS = {
-    "health": 1,
-    "ammo": 2,
-    "enhanced": 1,
-    "fan": 1
-}
+level_files = discover_level_files()
 ```
 
 ---
 
-## Level System
-- **Level Files**: Text files in `./levels/` (e.g., `level1.txt`).
-- **Loading**: `discover_level_files()` finds and sorts level files.
-- **Progression**: `next_level_or_win()` transitions to the next level or ends the game.
+### `main_async()`
+**Purpose**: Entry point for the game, handles command-line arguments and starts the game loop.
+
+**Arguments**:
+- `--level`: Starting level number (default: 1).
+
+**Usage**:
+```bash
+python game.py --level 3
+```
 
 ---
 
-## Input Handling
-Supports multiple input types:
-- **Keyboard**: WASD or arrow keys for movement, SPACE for shooting.
-- **Mouse**: Click to shoot (optional).
-- **Touch**: Mobile-friendly controls via `TouchControls`.
+## Configuration and Environment
+
+### Configuration Files
+- **Level Files**: Text files in `./levels/` (e.g., `level1.txt`) define enemy patterns and level layout.
+- **Constants**: Global variables like `BLACK`, `WHITE`, `GRAY` are defined elsewhere (e.g., in a `constants.py` file).
+
+### Environment Variables
+- `LEVELS_DIR`: Directory containing level files (default: `./levels/`).
+
+---
+
+## Game Mechanics
+
+### Player Controls
+- **Movement**: Arrow keys or touch controls.
+- **Shooting**: Spacebar or touch fire button.
+- **Power-Ups**:
+  - `health`: Restores 1 life.
+  - `ammo`: Adds 50 bullets.
+  - `enhanced`: Grants rapid-fire mode for 5 seconds.
+  - `fan`: Enables diagonal shooting for 5 seconds.
+
+### Collision Detection
+- **Player vs Enemies**: Triggers damage and explosions.
+- **Bullets vs Enemies**: Destroys enemies and drops power-ups.
+- **Safe Zone**: When the player reaches the bottom of the screen, the game advances to the next level.
 
 ---
 
@@ -396,75 +579,84 @@ Supports multiple input types:
 
 ### Starting the Game
 ```bash
-python game.py --level 1
+python game.py --level 2
 ```
+Starts the game at level 2.
 
-### Level File Format
-Each `levelX.txt` defines enemy positions and patterns. Example:
-```
-enemy1,100,200
-enemy2,300,150
-```
-
-### Power-Up Collection
-When the player collides with a power-up:
-```python
-# Example: Collecting a "health" drop
-self.player_sprite.lives = min(9, self.player_sprite.lives + 1)
-```
-
----
-
-## Key Functions
-
-### `shoot(time, bullets_group)`
-Fires bullets from the player. Handles cooldown and ammo limits.
-
-### `damage(damage_amount)`
-Reduces player/enemy health. Returns `True` if the entity is destroyed.
-
-### `grant_enhanced(now)`
-Activates the enhanced bullet spread for 5 seconds.
-
-### `grant_fan(now)`
-Activates diagonal shooting for 5 seconds.
-
----
-
-## Environment Variables
-- `LEVELS_DIR`: Directory containing level files (default: `./levels/`).
+### Adding a New Level
+1. Create a new `levelX.txt` file in `./levels/`.
+2. Define enemy patterns and layout in the file.
+3. The game will automatically detect and use the new level.
 
 ---
 
 ## Dependencies
-- `pygame`: For rendering and input handling.
-- `asyncio`: For async game loop.
-- `glob`: For discovering level files.
-- `random`: For power-up spawning.
+
+- **pygame**: For rendering and input handling.
+- **asyncio**: For asynchronous game loop.
+- **glob**: For discovering level files.
+- **random**: For power-up spawning.
 
 ---
 
-## File Structure (Repository Context)
+## Code Structure
+
 ```
 game.py
-levels/
-  level1.txt
-  level2.txt
-  ...
-utils.py  # (Assumed helper functions)
+├── Game class (main game logic)
+├── PlayerSprite class (player controls, shooting)
+├── Enemy classes (various enemy types)
+├── Bullet class (player and enemy projectiles)
+├── Drop class (power-ups)
+├── Explosion class (visual effects)
+└── discover_level_files() (level file discovery)
 ```
 
 ---
 
-## Future Improvements
-- Add sound effects and music.
-- Implement more enemy types and boss battles.
-- Add a pause menu and settings screen.
-- Optimize power-up spawning logic.
+## Key Constants
+
+| Name         | Value       | Purpose                     |
+|--------------|-------------|-----------------------------|
+| `BLACK`      | `(0, 0, 0)` | Background color            |
+| `WHITE`      | `(255, 255, 255)` | HUD text color       |
+| `GRAY`       | `(128, 128, 128)` | Debug info color     |
+| `RED`        | `(255, 0, 0)` | Game over text color      |
+| `GREEN`      | `(0, 255, 0)` | Win screen text color     |
 
 ---
 
-This documentation provides a high-level overview of the game's architecture, key components, and configuration. For deeper insights, explore the source code for specific implementations.
+## Async Game Loop
+The game uses `asyncio` for non-blocking updates:
+```python
+async def main_async():
+    game = Game(...)
+    await game.run()
+```
+- `game.run()` handles the main loop, updating and rendering the game state.
+- `update()` processes game logic (movement, collisions, etc.).
+- `render()` draws the current state to the screen.
+
+---
+
+## Example Level File Format
+A `level1.txt` might look like:
+```
+# Enemy pattern: x, y, speed, type
+100, 50, 2, basic
+200, 50, 1, fast
+```
+This defines two enemies at positions (100, 50) and (200, 50) with different speeds.
+
+---
+
+## Debugging
+- **Debug Mode**: Press `D` to show debug info (enemy count, bullet counts, etc.).
+- **HUD**: Displays lives, power-up timers, and pause messages.
+
+---
+
+This documentation provides a high-level overview of the game's architecture, mechanics, and configuration. For deeper insights, refer to the source code and associated files in the repository.
 
 #### Source
 
@@ -1389,33 +1581,50 @@ if __name__ == "__main__":
 
 # `requirements.txt` Documentation
 
-The `requirements.txt` file specifies the Python package dependencies required to run the project. It is used by `pip` to install all necessary libraries for development and execution.
+The `requirements.txt` file specifies the Python package dependencies required to run and build the **1942-lite** game. It ensures that all necessary libraries are installed in the correct versions for both desktop and web deployment.
 
 ---
 
 ## Overview
 
-This file lists the external Python packages required by the game application. It ensures consistency across environments by pinning specific versions of dependencies.
+This file lists the Python packages required for:
+- **Desktop gameplay** using Pygame
+- **Web deployment** via `pygbag` (WebAssembly conversion)
+
+It is used by `pip` to install dependencies via:
+```bash
+pip install -r requirements.txt
+```
 
 ---
 
-## Key Dependencies
+## Package Details
 
 ### 1. `pygame>=2.5.2`
 - **Purpose**: Core library for game development in Python.
 - **Features**:
-  - Graphics rendering
-  - Sound and music handling
-  - Input device support (keyboard, mouse, etc.)
-  - Collision detection
-- **Version**: Minimum version `2.5.2` (latest stable recommended).
+  - Handles graphics, sound, input, and game loops.
+  - Required for desktop execution (`main.py`).
+- **Version Constraint**: Minimum version `2.5.2` ensures compatibility with the game's mechanics and APIs.
+- **Usage**: Mandatory for local development and testing.
 
 ### 2. `pygbag`
-- **Purpose**: Enables running Pygame applications in web browsers via WebAssembly (WASM).
+- **Purpose**: Toolchain to convert Pygame projects into web-compatible WebAssembly (WASM) builds.
 - **Features**:
-  - WebAssembly compilation for browser compatibility
-  - Integration with Pygame's API for web deployment
-- **Usage**: Required for building or running the game in a web environment.
+  - Enables browser-based gameplay via `pygbag`.
+  - Handles asset bundling, runtime initialization, and cross-platform compatibility.
+- **Usage**: Required for building the web version of the game.
+
+---
+
+## Configuration Implications
+
+- **Desktop Mode**: Only `pygame` is needed. The game runs directly via `python main.py`.
+- **Web Mode**: Both `pygame` and `pygbag` are required. Use `pygbag` to build the project:
+  ```bash
+  python -m pygbag .
+  ```
+- **Asset Paths**: The game expects `assets/` and `levels/` directories at the same level as the web bundle. These are not managed by `requirements.txt` but are critical for runtime.
 
 ---
 
@@ -1426,34 +1635,45 @@ This file lists the external Python packages required by the game application. I
 pip install -r requirements.txt
 ```
 
-### Verify Installation
+### Run Desktop Version
 ```bash
-pip show pygame pygbag
+python main.py
+```
+
+### Build Web Version
+```bash
+python -m pygbag .
+```
+
+### Custom Level Start
+```bash
+python main.py --level 3
 ```
 
 ---
 
-## Configuration Implications
+## Version Compatibility
 
-- **Environment Setup**: Ensure Python 3.x is installed. The project uses `asyncio`, so a modern Python version (3.7+) is required.
-- **Web Deployment**: `pygbag` is necessary for packaging the game as a web application. Without it, browser-based execution will fail.
-- **Version Compatibility**: The pinned version of `pygame` ensures stability. Upgrading may require testing for compatibility.
-
----
-
-## Relationship with Other Files
-
-- **`main_async.py`**: Uses `pygbag` for async game loops and web deployment.
-- **`build/version.txt`**: Tracks the project version (0.9.2), separate from dependency versions.
-- **Game Logic**: Relies on `pygame` for all core mechanics (e.g., `PlayerSprite`, `Enemy`, bullet physics).
+- **Pygame 2.5.2+**: Ensures support for modern Pygame features (e.g., sprite handling, collision detection).
+- **pygbag**: Version compatibility is managed by `pip`, but ensure it aligns with the Pygame version used for web conversion.
 
 ---
 
-## Best Practices
+## Notes
 
-- **Lock Versions**: Always use pinned versions in `requirements.txt` to avoid unexpected behavior from updates.
-- **Environment Isolation**: Use virtual environments (`venv`) to manage dependencies per project.
-- **Web Builds**: For web deployment, ensure `pygbag` is installed and configured correctly.
+- **Development Workflow**:
+  - Use `pygame` for local testing.
+  - Use `pygbag` to export to the web.
+- **Web Deployment**:
+  - After building with `pygbag`, ensure `assets/` and `levels/` are hosted alongside the `build/web/` directory.
+  - Example structure for web hosting:
+    ```
+    /host-root/
+      ├─ build/
+      │  └─ web/          # Generated by pygbag
+      ├─ assets/          # Sprite/background images
+      └─ levels/          # Level map files (e.g., level1.txt)
+    ```
 
 #### Source
 
