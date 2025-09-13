@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import os, sys, time, math, random, glob
+import os, sys, time, math, random, glob, asyncio
 import pygame
+
 WIDTH, HEIGHT = 800, 600
 FPS = 60
 PLAYER_SPEED = 300.0
@@ -40,11 +41,24 @@ DROP_WEIGHTS = {"health": 1, "ammo": 1, "enhanced": 2, "fan": 2}
 SAFE_ZONE_TAIL_MS = 5000
 WHITE=(255,255,255); BLACK=(0,0,0); GREEN=(0,220,0); RED=(220,40,40); YELLOW=(250,220,80); BLUE=(60,160,255); GRAY=(100,100,100)
 
+# Web vs desktop
+IS_WEB = (sys.platform == "emscripten")
 
-BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
-ASSETS_DIR = os.path.join(BASE_DIR, "assets")
-LEVELS_DIR = os.path.join(BASE_DIR, "levels")
+# Paths: absolute on desktop, relative on web
+if IS_WEB:
+    BASE_DIR   = ""
+    ASSETS_DIR = "assets"
+    LEVELS_DIR = "levels"
+else:
+    BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
+    ASSETS_DIR = os.path.join(BASE_DIR, "assets")
+    LEVELS_DIR = os.path.join(BASE_DIR, "levels")
 
+async def sleep_ms(ms: int):
+    if IS_WEB:
+        await asyncio.sleep(ms / 1000.0)
+    else:
+        pygame.time.delay(ms)
 
 def load_image(path: str, fallback_size=(24,24), color=(200,200,200)):
     if os.path.exists(path):
@@ -79,7 +93,7 @@ def load_explosion_frames(folder="assets", prefix="explosion_", count=6):
 
 def load_level_grid(path: str) -> list[str]:
     with open(path, "r", encoding="utf-8") as f:
-        lines = [line.rstrip("\n") for line in f]
+        lines = [line.rstrip("\\n") for line in f]
     maxw = max((len(l) for l in lines), default=0)
     norm = [(l + " " * max(0, maxw - len(l)))[:maxw] for l in lines]
     return norm
@@ -92,7 +106,7 @@ def connected_components(grid: list[str]) -> list[dict]:
     for r in range(R):
         for c in range(C):
             ch = grid[r][c]
-            if ch not in (" ", ".", "\t") and not visited[r][c]:
+            if ch not in (" ", ".", "\\t") and not visited[r][c]:
                 stack=[(r,c)]; visited[r][c]=True; cells=[]
                 while stack:
                     rr,cc=stack.pop(); cells.append((rr,cc))
@@ -108,7 +122,7 @@ def connected_components(grid: list[str]) -> list[dict]:
 
 # ------------ Scrolling background --------------
 class ScrollingBackground:
-    def __init__(self, segments, speed=100, loop=True):
+    def __init__(self, segments, speed=50, loop=True):
         self.segs = segments[:] if segments else [pygame.Surface((WIDTH, HEIGHT))]
         self.speed = float(speed)
         self.loop = loop
@@ -200,18 +214,13 @@ def load_level_background(level_number: int) -> ScrollingBackground:
         segs.append(tile)
         print(f"[BG] Level {level_number}: no PNGs found, using fallback tile")
 
-    #base_speed = 40 + (level_number - 1) * 5
-    base_speed = 50
-
+    base_speed = 50  # tweak speed here
     bg = ScrollingBackground(segs, speed=base_speed, loop=True)
-    # Reset scroll at start
-    bg.offset = 0
-    print(f"[BG] Level {level_number}: loaded {len(segs)} segment(s):")
-    for i, p in enumerate(seg_paths or ["<fallback>"], 1):
-        print(f"   {i:02d}: {p}")
-    print(f"   total_h={bg.total_h}px, speed={base_speed}px/s")
+    # Start with the last part visible to avoid black at boot
+    if bg.total_h > 0:
+        bg.offset = (bg.total_h - HEIGHT) % bg.total_h
+    print(f"[BG] Level {level_number}: loaded {len(segs)} segment(s) total_h={bg.total_h}px speed={base_speed}px/s")
     return bg
-
 
 # ------------ Entities --------------
 class Bullet(pygame.sprite.Sprite):
@@ -427,16 +436,11 @@ class LevelTimeline:
 class Game:
     def __init__(self, level_paths: list[str]):
         pygame.init()
+        # Use default font (works on web)
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT)); pygame.display.set_caption("1942-lite")
-        self.clock = pygame.time.Clock(); self.font = pygame.font.SysFont("consolas", 18); self.bigfont = pygame.font.SysFont("consolas", 28)
+        self.clock = pygame.time.Clock(); self.font    = pygame.font.Font(None, 18); self.bigfont = pygame.font.Font(None, 28)
         self.running = True; self.paused = False; self.debug = False
-        # self.assets = {
-        #     "player": load_image(os.path.join("assets","player.png"), (28,28), (70,160,255)),
-        #     "enemy_shooter": load_image(os.path.join("assets","enemy_shooter.png"), (36,28), (210,60,60)),
-        #     "enemy_kamikaze": load_image(os.path.join("assets","enemy_kamikaze.png"), (30,26), (255,140,30)),
-        #     "enemy_big": load_image(os.path.join("assets","enemy_big.png"), (54,42), (180,60,200)),
-        #     "explosion_frames": load_explosion_frames("assets", "explosion_", 6),
-        # }
+
         self.assets = {
             "player":         load_image(os.path.join(ASSETS_DIR, "player.png"),         (28,28), (70,160,255)),
             "enemy_shooter":  load_image(os.path.join(ASSETS_DIR, "enemy_shooter.png"),  (36,28), (210,60,60)),
@@ -452,7 +456,6 @@ class Game:
         self.bg = None
         self.load_level(self.level_paths[self.level_index])
         self.safe_zone_active = False; self.safe_zone_y = HEIGHT - 80
-        
 
     @property
     def player_sprite(self): return self.player.sprite
@@ -471,20 +474,27 @@ class Game:
             self.bg.offset = (self.bg.total_h - HEIGHT) % self.bg.total_h
 
         print(f"[BG] Level {lvl_num}: segments={len(self.bg.segs)} total_h={self.bg.total_h}")
-   
 
     def spawn_safe_zone_if_ready(self):
         if not self.timeline.done_spawning: return
         if self.timeline.all_spawned_time is not None:
             if pygame.time.get_ticks() - self.timeline.all_spawned_time >= SAFE_ZONE_TAIL_MS: self.safe_zone_active = True
 
-    def run(self):
+    async def run(self):
         while self.running:
             dt = self.clock.tick(FPS)/1000.0; dt_ms = dt*1000.0
             self.handle_events()
-            if not self.paused: self.update(dt, dt_ms)
+            if not self.paused:
+                await self.update(dt, dt_ms)
             self.render()
-        pygame.quit()
+
+            # Important for pygbag: let the browser breathe
+            if IS_WEB:
+                await asyncio.sleep(0)
+
+        # On desktop, quit pygame at the end
+        if not IS_WEB:
+            pygame.quit()
 
     def handle_events(self):
         for e in pygame.event.get():
@@ -501,7 +511,7 @@ class Game:
             self.player_sprite.update(0, keys)
             if keys[pygame.K_SPACE]: self.player_sprite.shoot(time.perf_counter(), self.player_bullets)
 
-    def update(self, dt, dt_ms):
+    async def update(self, dt, dt_ms):
         keys = pygame.key.get_pressed(); self.player_sprite.update(dt, keys)
         self.timeline.update(dt_ms, self.enemies, self.player_sprite, self.enemy_bullets); self.spawn_safe_zone_if_ready()
         for e in list(self.enemies):
@@ -533,7 +543,7 @@ class Game:
                 for b in list(self.enemy_bullets):
                     if self.player_sprite.rect.colliderect(b.rect): b.kill()
                 self.fx.add(Explosion(px, py, self.assets["explosion_frames"]))
-                if not alive: self.game_over()
+                if not alive: await self.game_over()
                 else: self.player_sprite.rect.center = (px, py)
         got = pygame.sprite.spritecollide(self.player_sprite, self.drops, dokill=True)
         now = time.perf_counter()
@@ -547,30 +557,36 @@ class Game:
             elif d.kind == "fan":
                 self.player_sprite.grant_fan(now)
 
-        if self.safe_zone_active and self.player_sprite.rect.top <= self.safe_zone_y: self.next_level_or_win()
+        if self.safe_zone_active and self.player_sprite.rect.top <= self.safe_zone_y: await self.next_level_or_win()
 
-    def next_level_or_win(self):
+    async def next_level_or_win(self):
         self.level_index += 1
         if self.level_index < len(self.level_paths):
-            self.banner("LEVEL CLEARED!", (80,220,80), delay=1200)
+            await self.banner("LEVEL CLEARED!", (80,220,80), delay=1200)
             self.load_level(self.level_paths[self.level_index])
             self.player_sprite.rect.center = (WIDTH//2, HEIGHT-70); self.player_sprite.invuln_t = 1.0
-        else: self.win_and_exit()
+        else:
+            await self.win_and_exit()
 
-    def game_over(self):
+    async def game_over(self):
         surf = self.screen; surf.fill(BLACK)
         txt = self.bigfont.render("GAME OVER", True, RED); surf.blit(txt, txt.get_rect(center=(WIDTH//2, HEIGHT//2)))
-        pygame.display.flip(); pygame.time.delay(2200); self.running = False
+        pygame.display.flip()
+        await sleep_ms(2200)
+        self.running = False
 
-    def win_and_exit(self):
+    async def win_and_exit(self):
         surf = self.screen; surf.fill(BLACK)
         txt = self.bigfont.render("SAFE ZONE REACHED! YOU WIN!", True, GREEN); surf.blit(txt, txt.get_rect(center=(WIDTH//2, HEIGHT//2)))
-        pygame.display.flip(); pygame.time.delay(2200); self.running = False
+        pygame.display.flip()
+        await sleep_ms(2200)
+        self.running = False
 
-    def banner(self, text, color, delay=1000):
+    async def banner(self, text, color, delay=1000):
         surf = self.screen; surf.fill(BLACK)
         b = self.bigfont.render(text, True, color); surf.blit(b, b.get_rect(center=(WIDTH//2, HEIGHT//2)))
-        pygame.display.flip(); pygame.time.delay(delay)
+        pygame.display.flip()
+        await sleep_ms(delay)
 
     def render(self):
         self.screen.fill(BLACK)
@@ -605,7 +621,7 @@ def discover_level_files(level_dir=LEVELS_DIR):  # default now absolute
     files.sort(key=lambda x: (x[0], x[1]))
     return [p for _,p in files]
 
-def main():
+async def main_async():
     import argparse
     parser = argparse.ArgumentParser(description="1942-lite shooter")
     parser.add_argument("--level", type=int, default=1, help="Level number to start from (default: 1)")
@@ -613,7 +629,7 @@ def main():
 
     level_files = discover_level_files()
     if not level_files:
-        print("No levels found in ./levels (expected level1.txt).");
+        print("No levels found in ./levels (expected level1.txt).")
         sys.exit(1)
 
     start_index = max(0, args.level - 1)
@@ -621,7 +637,8 @@ def main():
         print(f"Level {args.level} not found. Available: 1–{len(level_files)}")
         sys.exit(1)
 
-    Game(level_files[start_index:]).run()
+    game = Game(level_files[start_index:])
+    await game.run()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main_async())
