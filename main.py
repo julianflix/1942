@@ -19,7 +19,12 @@ BIG_MIN_ABS_H = 60
 
 
 ENEMY_BASE_SPEED = 120.0
-KAMIKAZE_SPEED = 160.0
+# config
+KAMIKAZE_SPEED = 190.0          # was 160
+KAMIKAZE_BOOST = 120.0          # extra when locked
+KAMIKAZE_LOCK_DX = 30           # horiz. alignment window (px)
+KAMIKAZE_LOCK_DY = 120          # vertical “in range” to start boost
+
 ENEMY_BULLET_SPEED = 300.0
 ENEMY_FIRE_COOLDOWN = (1.2, 2.4)
 SPAWN_ROW_MS = 800
