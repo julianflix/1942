@@ -32,7 +32,7 @@ SPAWN_ROW_MS = 800
 DROP_CHANCE = 0.35
 DROP_TYPES = ["health", "ammo", "enhanced", "fan"]  # added "fan"
 # Weighted drop table: fan shows up twice as often as the others.
-DROP_WEIGHTS = {"health": 1, "ammo": 2, "enhanced": 2, "fan": 1.5}
+DROP_WEIGHTS = {"health": 1, "ammo": 1, "enhanced": 2, "fan": 2}
 
 
 SAFE_ZONE_TAIL_MS = 5000
