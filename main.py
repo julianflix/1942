@@ -23,7 +23,7 @@ ENEMY_BASE_SPEED = 120.0
 KAMIKAZE_SPEED = 200.0          # was 160
 KAMIKAZE_BOOST = 200.0          # extra when locked
 KAMIKAZE_LOCK_DX = 100           # horiz. alignment window (px)
-KAMIKAZE_LOCK_DY = 300          # vertical “in range” to start boost
+KAMIKAZE_LOCK_DY = 600          # vertical “in range” to start boost
 
 ENEMY_BULLET_SPEED = 300.0
 #ENEMY_FIRE_COOLDOWN = (1.2, 2.4)
