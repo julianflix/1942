@@ -15,8 +15,17 @@ ENHANCED_WEAPON_DURATION = 10.0
 # Big enemy sizing (relative guarantees)
 BIG_MIN_SCALE_VS_SHOOTER = 1.8
 BIG_PADDING = 0.92
+# --- BigEnemy safety caps (add near other BIG_* constants) ---
 BIG_MIN_ABS_W = 80
 BIG_MIN_ABS_H = 60
+BIG_MAX_ABS_W = int(WIDTH * 0.70)   # prevent skyscraper-wide bosses
+BIG_MAX_ABS_H = int(HEIGHT * 0.55)  # prevent skyscraper-tall bosses
+
+# Only allow big enemies when the letter is explicitly 'B'
+ONLY_EXPLICIT_BOSS = True
+
+# Optional spawn debug
+DEBUG_SPAWN = False
 
 ENEMY_BASE_SPEED = 120.0
 
@@ -345,15 +354,41 @@ class KamikazeEnemy(Enemy):
 
 class BigEnemy(Enemy):
     def __init__(self, x, y, base_img, w_cells, h_cells, cell_w, cell_h, shooter_img):
-        target_w = max(int(w_cells * cell_w * BIG_PADDING), BIG_MIN_ABS_W)
-        target_h = max(int(h_cells * cell_h * BIG_PADDING), BIG_MIN_ABS_H)
+        # Desired bbox from component
+        bbox_w = max(int(w_cells * cell_w * BIG_PADDING), BIG_MIN_ABS_W)
+        bbox_h = max(int(h_cells * cell_h * BIG_PADDING), BIG_MIN_ABS_H)
+
+        # Enforce caps
+        bbox_w = min(bbox_w, BIG_MAX_ABS_W)
+        bbox_h = min(bbox_h, BIG_MAX_ABS_H)
+
+        # Ensure bigger than a shooter, still within caps
         sw, sh = shooter_img.get_width(), shooter_img.get_height()
-        target_w = max(target_w, int(sw * BIG_MIN_SCALE_VS_SHOOTER))
-        target_h = max(target_h, int(sh * BIG_MIN_SCALE_VS_SHOOTER))
+        bbox_w = max(bbox_w, int(sw * BIG_MIN_SCALE_VS_SHOOTER))
+        bbox_h = max(bbox_h, int(sh * BIG_MIN_SCALE_VS_SHOOTER))
+        bbox_w = min(bbox_w, BIG_MAX_ABS_W)
+        bbox_h = min(bbox_h, BIG_MAX_ABS_H)
+
+        # Preserve aspect ratio of the base image
+        bw, bh = base_img.get_width(), base_img.get_height()
+        if bw <= 0 or bh <= 0:
+            target_w, target_h = bbox_w, bbox_h
+        else:
+            scale = min(bbox_w / bw, bbox_h / bh)
+            target_w = max(1, int(bw * scale))
+            target_h = max(1, int(bh * scale))
+
         img2 = pygame.transform.smoothscale(base_img, (target_w, target_h))
+
+        # HP scaled to component area, with a floor
         hp = max(6, 4 + (w_cells * h_cells) // 2)
         super().__init__(x, y, img2, hp=hp)
         self.vy = ENEMY_BASE_SPEED * 0.75
+
+        # keep inside screen horizontally
+        if self.rect.left < 0: self.rect.left = 0
+        if self.rect.right > WIDTH: self.rect.right = WIDTH
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, img):
@@ -423,15 +458,40 @@ class LevelTimeline:
             self.done_spawning = True; self.all_spawned_time = pygame.time.get_ticks()
     def _spawn_event(self, ev, enemies_group, player_ref, enemy_bullets):
         letter = ev.letter.upper()
-        if ev.w_cells * ev.h_cells > 1 or letter == "B":
-            e = BigEnemy(ev.cx, ev.cy, self.img_big, ev.w_cells, ev.h_cells, self.cell_w, self.cell_h, shooter_img=self.img_shooter)
-        elif letter == "S":
+
+        # Safety: optionally *only* spawn BigEnemy when the map letter is 'B'
+        if ONLY_EXPLICIT_BOSS and letter != "B":
+            # Not a boss; fall through to regular types below
+            pass
+        elif letter == "B":
+            # Guard against absurd components (just in case)
+            if ev.w_cells > 12 or ev.h_cells > 12:
+                if DEBUG_SPAWN:
+                    print(f"[SPAWN] Suppressing giant BigEnemy {ev.w_cells}x{ev.h_cells} at row {ev.min_row}")
+                e = Enemy(ev.cx, ev.cy, self.img_shooter, hp=2)
+            else:
+                e = BigEnemy(
+                    ev.cx, ev.cy,
+                    self.img_big,
+                    ev.w_cells, ev.h_cells,
+                    self.cell_w, self.cell_h,
+                    shooter_img=self.img_shooter,
+                )
+                enemies_group.add(e)
+                if DEBUG_SPAWN:
+                    print(f"[SPAWN] BigEnemy {ev.w_cells}x{ev.h_cells} at row {ev.min_row}, center=({ev.cx},{ev.cy})")
+                return  # done
+
+        # Normal spawns
+        if letter == "S":
             e = ShooterEnemy(ev.cx, ev.cy, self.img_shooter); e.target_ref = player_ref
         elif letter == "K":
             e = KamikazeEnemy(ev.cx, ev.cy, self.img_kamikaze); e.target_ref = player_ref
         else:
             e = Enemy(ev.cx, ev.cy, self.img_shooter, hp=2)
+
         enemies_group.add(e)
+
 
 class Game:
     def __init__(self, level_paths: list[str]):
