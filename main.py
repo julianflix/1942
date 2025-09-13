@@ -20,13 +20,14 @@ BIG_MIN_ABS_H = 60
 
 ENEMY_BASE_SPEED = 120.0
 # config
-KAMIKAZE_SPEED = 190.0          # was 160
-KAMIKAZE_BOOST = 120.0          # extra when locked
-KAMIKAZE_LOCK_DX = 30           # horiz. alignment window (px)
-KAMIKAZE_LOCK_DY = 120          # vertical “in range” to start boost
+KAMIKAZE_SPEED = 200.0          # was 160
+KAMIKAZE_BOOST = 200.0          # extra when locked
+KAMIKAZE_LOCK_DX = 100           # horiz. alignment window (px)
+KAMIKAZE_LOCK_DY = 300          # vertical “in range” to start boost
 
 ENEMY_BULLET_SPEED = 300.0
-ENEMY_FIRE_COOLDOWN = (1.2, 2.4)
+#ENEMY_FIRE_COOLDOWN = (1.2, 2.4)
+ENEMY_FIRE_COOLDOWN = (0.5, 0.7)
 SPAWN_ROW_MS = 800
 DROP_CHANCE = 0.35
 DROP_TYPES = ["health", "ammo", "enhanced"]
@@ -160,17 +161,36 @@ class ShooterEnemy(Enemy):
 
 class KamikazeEnemy(Enemy):
     def __init__(self, x, y, img, hp=2):
-        super().__init__(x,y,img,hp); self.vy = KAMIKAZE_SPEED; self.target_ref = None
+        super().__init__(x, y, img, hp)
+        self.vy = KAMIKAZE_SPEED
+        self.target_ref = None
+        self.locked = False  # becomes True when horizontally aligned and close enough
+
     def update(self, dt):
         if self.target_ref is not None:
             px, py = self.target_ref.rect.center
-            dx = px - self.rect.centerx; dy = py - self.rect.centery
+            dx = px - self.rect.centerx
+            dy = py - self.rect.centery
+
+            # lock-on if we're roughly lined up horizontally and the player is ahead
+            if abs(dx) < KAMIKAZE_LOCK_DX and 0 < dy < KAMIKAZE_LOCK_DY:
+                self.locked = True
+
+            # forward speed: base + boost after lock-on
+            fwd = self.vy + (KAMIKAZE_BOOST if self.locked else 0.0)
+
+            # steer toward player
             d = max(1.0, math.hypot(dx, dy))
-            vx = (dx / d) * 100.0; vy = (dy / d) * self.vy / (KAMIKAZE_SPEED/100.0)
-            self.rect.x += int(vx * dt); self.rect.y += int(vy * dt)
+            vx = (dx / d) * 100.0
+            vy = (dy / d) * fwd / (KAMIKAZE_SPEED / 100.0)
+
+            self.rect.x += int(vx * dt)
+            self.rect.y += int(vy * dt)
         else:
             self.rect.y += int(self.vy * dt)
-        if self.rect.top > HEIGHT or self.rect.right < 0 or self.rect.left > WIDTH: self.kill()
+
+        if self.rect.top > HEIGHT or self.rect.right < 0 or self.rect.left > WIDTH:
+            self.kill()
 
 class BigEnemy(Enemy):
     def __init__(self, x, y, base_img, w_cells, h_cells, cell_w, cell_h, shooter_img):
