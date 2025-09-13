@@ -14,15 +14,21 @@ ENHANCED_WEAPON_DURATION = 10.0
 
 # ---- On-screen controls (thumbstick + fire button) ----
 JOY_BASE_POS = (120, HEIGHT - 120)   # left-bottom
-JOY_BASE_R   = 70
-JOY_KNOB_R   = 32
+JOY_BASE_R   = 35
+JOY_KNOB_R   = 16
 JOY_DEADZONE = 0.12                  # ignore tiny jitters
 
 FIRE_POS     = (WIDTH - 120, HEIGHT - 120)  # right-bottom
 FIRE_R       = 56
 FIRE_COLOR   = (255, 200, 80)
 UI_ALPHA     = 140                   # transparency for UI widgets
+_UI_BOTTOM_MARGIN = 60            # distance from bottom edge
+_UI_SIDE_MARGIN   = 90            # distance from left/right edge
 
+JOY_BASE_POS = ( _UI_SIDE_MARGIN, HEIGHT - _UI_BOTTOM_MARGIN )
+FIRE_POS     = ( WIDTH - _UI_SIDE_MARGIN, HEIGHT - _UI_BOTTOM_MARGIN )
+FIRE_R       = 28                 # was 56
+FIRE_COLOR   = (255, 200, 80)
 
 # Big enemy sizing (relative guarantees)
 BIG_MIN_SCALE_VS_SHOOTER = 1.8
