@@ -3,6 +3,8 @@
 ## Tree (filtered)
 
 ```
+├── build/
+│   └── version.txt
 ├── levels/
 │   ├── level1.txt
 │   ├── level10.txt
@@ -21,2223 +23,221 @@
 
 ## Files
 
-### FILE: `levels/level1.txt`
+### FILE: `build/version.txt`
 
 #### Description
 
-# Level File Documentation: `levels/level1.txt`
+# `build/version.txt` Documentation
 
 ---
 
 ## Overview
-`levels/level1.txt` is a text-based level configuration file used by the game to define the structure and elements of the first level. It is part of a series of level files (`level1.txt` to `level9.txt`) that collectively form the game's progression. Each level file uses a grid-based representation with specific characters to denote game elements such as player starting positions (`S`), enemies or keys (`K`), and empty spaces (`.`).
+
+The `build/version.txt` file is a **version control file** that stores the current version number of the application. This file is typically used during the build process to embed version information into the application, enabling users and developers to identify the exact release version.
 
 ---
 
-## File Structure
-The file consists of a grid of 24 rows, each containing 40 characters. Each character represents a specific element in the game world. The structure is as follows:
+## File Location
 
 ```
-........................................................................
-........................................................................
-........................................................................
-.................................................S....................K.
-........................................................................
-........................................................................
-......S.....S...........................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-............K...........................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-..........................................S.................K...........
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-..................................................................K.....
-........................................................................
-........................................................................
-.......S................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
+build/version.txt
 ```
+
+This file is located in the `build/` directory of the project, which is commonly used to store build artifacts and configuration files.
 
 ---
 
-## Character Mapping
-| Character | Description                     |
-|-----------|---------------------------------|
-| `.`       | Empty space (walkable terrain)  |
-| `S`       | Player starting position        |
-| `K`       | Enemy or key (context-dependent)|
+## File Content
 
-**Notes:**
-- `S` positions are typically where the player spawns.
-- `K` positions may represent enemies, collectibles, or interactive objects, depending on game logic.
-- The grid is 24 rows × 40 columns, with consistent spacing.
+```
+0.9.2
+```
+
+The file contains a single line with a **semantic version number** in the format `MAJOR.MINOR.PATCH`. 
+
+- **MAJOR**: 0 (indicating the project is in early development)
+- **MINOR**: 9 (feature updates)
+- **PATCH**: 2 (bug fixes)
+
+This follows [Semantic Versioning (SemVer)](https://semver.org/), a standard for versioning software.
 
 ---
 
-## Relationship to Other Files
-- **`levels/level_loader.py`**: Parses this file and converts it into a game-ready grid. It reads each line, strips whitespace, and maps characters to in-game entities.
-- **`main.py`**: Loads this file (and others) to initialize levels during gameplay.
-- **`assets/`**: Contains visual assets (e.g., images for `S`, `K`) used to render the level.
+## Usage
+
+### Purpose
+- **Version Identification**: The version number is used to track the state of the application, helping users and developers understand what features or fixes are included in a release.
+- **Build Process**: During the build, this file may be read to inject the version into the application (e.g., in logs, UI, or metadata).
+- **Release Management**: Updating this file is part of the release process to indicate new versions.
+
+### Example Use Cases
+- **Displaying Version**: The application may read this file at runtime to show the version in the UI or logs.
+- **CI/CD Pipelines**: Continuous integration systems may use this file to automate versioning and deployment.
 
 ---
 
-## Usage Examples
-### 1. **Modifying the Level**
-To add a new element (e.g., a wall or obstacle), replace a `.` with a custom character (e.g., `#`), and update the game's character mapping logic in `level_loader.py`.
+## Implications of Modification
 
-```python
-# Example: Adding a wall in level1.txt
-# Replace a '.' with '#' in the grid:
-# ...S....................K.
-# becomes
-# ...S#...................K.
-```
-
-### 2. **Loading the Level**
-The game loads this file using a function like the following:
-
-```python
-def load_level(file_path):
-    with open(file_path, 'r') as file:
-        return [list(line.strip()) for line in file]
-```
-
-### 3. **Game Logic Integration**
-The parsed grid is used to:
-- Spawn the player at `S` positions.
-- Detect interactions with `K` elements (e.g., enemy AI, key collection).
+- **Incrementing the Version**: Update the version number according to SemVer rules when:
+  - Adding new features (increment `MINOR`),
+  - Fixing bugs (increment `PATCH`),
+  - Making breaking changes (increment `MAJOR`).
+- **Build Artifacts**: Changing this file may require rebuilding the application to reflect the new version in outputs.
 
 ---
 
-## Configuration Implications
-- **Grid Size**: All level files must adhere to the 24×40 grid size for consistency.
-- **Character Consistency**: New characters added to this file must be supported by `level_loader.py` and the rendering system.
-- **Environment Variables**: No direct environment variables are used for level loading, but the `LEVELS_DIR` path in `main.py` may be configurable.
+## Example
 
----
+To update the version to `1.0.0` (a major release):
 
-## Example Level Layout
-Here’s a snippet from `level1.txt`:
-```
-.................................................S....................K.
-......S.....S...........................................................
-............K...........................................................
-..........................................S.................K...........
-.......S................................................................
-```
-- **Player Start**: Two `S` positions in the 6th row.
-- **Enemies/Keys**: `K` positions in the 4th, 12th, and 24th rows.
-- **Empty Space**: The majority of the grid is navigable terrain (`.`).
+1. Modify `build/version.txt`:
+   ```
+   1.0.0
+   ```
 
----
-
-## Notes for Developers
-- Ensure all level files follow the 24×40 grid format.
-- Use consistent character symbols across all levels for predictable game behavior.
-- Test level files with `level_loader.py` to verify parsing accuracy.
-
-#### Source
-
-```
-........................................................................
-........................................................................
-........................................................................
-.................................................S....................K.
-........................................................................
-........................................................................
-......S.....S...........................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-............K...........................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-..........................................S.................K...........
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-..................................................................K.....
-........................................................................
-........................................................................
-.......S................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-```
-
-### FILE: `levels/level10.txt`
-
-#### Description
-
-# Level 10 File Documentation
-
-## Overview
-`levels/level10.txt` is a text-based grid file representing the 10th level of a game map. It defines the spatial layout of game elements using a character-based system, which is parsed by the game engine to create the level's environment. This file is part of a series of level files (`level1.txt` through `level10.txt`) that follow a consistent structure and symbol convention.
-
----
-
-## File Structure
-The file consists of a 20-row grid, with each row containing 60 characters. Each character represents a specific game element or terrain type. The structure is designed to be human-readable and easily modifiable for level design.
-
-### Example Snippet
-```plaintext
-B.......................................................................
-........................................................................
-........................................................................
-...........B............................................................
-```
-
----
-
-## Symbol Legend
-The following symbols are used in this file to represent game elements:
-
-| Symbol | Description                     | Role in Game                     |
-|--------|----------------------------------|----------------------------------|
-| `B`    | Base/Structure                   | Critical player objective        |
-| `K`    | Kill Zone                        | Enemy spawn/attack area          |
-| `S`    | Spawn Point                      | Player/enemy starting position   |
-| `.`    | Empty Space                      | Walkable/neutral terrain         |
-| `#`    | Obstacle/Wall                    | Impassable boundary              |
-
-> **Note**: This symbol set is consistent across all level files in the repository.
-
----
-
-## Key Functions/Classes
-The file is consumed by the game engine through the following mechanisms:
-
-### 1. **Level Loader Class**
-```python
-class LevelLoader:
-    def load_level(self, file_path: str) -> List[List[str]]:
-        """Reads a level file and returns a 2D grid representation."""
-        with open(file_path, 'r') as f:
-            return [list(line.strip()) for line in f]
-```
-
-### 2. **Map Renderer**
-```python
-def render_map(grid: List[List[str]]):
-    """Converts the grid into visual elements for the game engine."""
-    for row in grid:
-        print("".join(row))
-```
-
----
-
-## Configuration Implications
-- **Level Difficulty**: The placement of `K` (kill zones) and `S` (spawn points) directly affects enemy AI behavior and player challenges.
-- **Map Size**: All levels use a fixed 20x60 grid size, ensuring consistency across the game.
-- **Asset Mapping**: The game engine maps symbols to specific textures/models (e.g., `B` → base model, `K` → enemy spawner).
-
----
-
-## Usage Examples
-### 1. Loading the Level
-```python
-loader = LevelLoader()
-level_data = loader.load_level("levels/level10.txt")
-print(f"Loaded level 10 with {len(level_data)} rows")
-```
-
-### 2. Visualizing the Map
-```python
-render_map(level_data)
-# Output:
-# B.......................................................................
-# ........................................................................
-# ........................................................................
-# ...........B............................................................
-# ...
-```
-
-### 3. Analyzing Symbol Distribution
-```python
-from collections import Counter
-all_symbols = [char for row in level_data for char in row]
-print(Counter(all_symbols))
-# Output: Counter({'.': 1200, 'B': 4, 'K': 8, 'S': 6, ...})
-```
-
----
-
-## Environment Variables
-- `LEVEL_DIR`: Specifies the base directory for level files (default: `"levels/"`).
-- `GRID_SIZE`: Defines the expected grid dimensions (20x60 for all levels).
-
----
-
-## Versioning Notes
-This file is part of a version-controlled level set. Changes to `level10.txt` should be accompanied by:
-1. Updated documentation in this format
-2. Validation tests to ensure symbol consistency
-3. Playtesting for balance and difficulty
+2. Rebuild the application to embed the new version.
 
 ---
 
 ## Related Files
-- `levels/level1.txt` - `level9.txt`: Other levels in the series
-- `game_engine.py`: Contains the `LevelLoader` and `render_map` implementations
-- `config.yaml`: May define symbol-to-asset mappings
+
+- **`requirements.txt`**: Specifies dependencies like `pygame>=2.5.2` and `pygbag`, which are required for the application to run.
+- **`main.py`**: The entry point of the application, which may read the version during initialization.
+- **`README.md`**: Contains project documentation, including setup and usage instructions.
 
 ---
 
 ## Best Practices
-1. **Consistency**: Maintain the same symbol set across all levels.
-2. **Backup**: Keep versioned backups of level files during development.
-3. **Testing**: Use the `render_map` function to validate visual output.
 
-This documentation ensures clear understanding of `level10.txt`'s role in the game's level system and its relationship with other components.
-
-#### Source
-
-```
-B.......................................................................
-........................................................................
-........................................................................
-...........B............................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-.......................................................BB...............
-........................................................................
-........................................................................
-........................................K...............................
-........................................................................
-........................................................................
-...........................K............................................
-........................................................................
-........................................................................
-................................................K.......BB..............
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-................B.......................................K...............
-........................................................................
-........................................................................
-......................K.................................................
-........................................................................
-........................................................................
-..................................................S...................S.
-........................................................................
-........................................................................
-..................K.....................................................
-........................................................................
-........................................................................
-........................K.....K.....BB....S.............................
-........................................................................
-........................................................................
-............K.......................B...................................
-........................................................................
-........................................................................
-...........................S...................................K........
-........................................................................
-........................................................................
-............K...........................................................
-........................................................................
-........................................................................
-..............B......BB.....K....................K......S...............
-........................................................................
-........................................................................
-..............................S.........................................
-........................................................................
-........................................................................
-........................................................B.............BB
-........................................................................
-........................................................................
-....................................K.....S.............................
-........................................................................
-........................................................................
-........S.......................................B.......................
-........................................................................
-........................................................................
-................................................K.......................
-........................................................................
-........................................................................
-................S...............................K.......S...............
-........................................................................
-........................................................................
-..........K.............................S.........K.....................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-K.......................K...............................................
-........................................................................
-........................................................................
-................................................BB......................
-........................................................................
-........................................................................
-S.............................B...................S.........B...........
-........................................................................
-........................................................................
-```
-
-### FILE: `levels/level2.txt`
-
-#### Description
-
-# Level File Documentation: `levels/level2.txt`
-
-This file defines the layout of **Level 2** in a grid-based game or simulation. It uses a character-based format to represent entities, obstacles, and terrain. Below is a detailed breakdown of its structure, purpose, and relationships with the broader codebase.
-
----
-
-## 🧩 File Structure
-
-Each line represents a row in a 40-column grid. The characters correspond to specific elements in the game world:
-
-| Character | Description                     | Example Usage                     |
-|-----------|----------------------------------|-----------------------------------|
-| `.`       | Empty space / walkable terrain  | Background, paths                 |
-| `K`       | Enemy / hostile entity          | Enemies to avoid or defeat        |
-| `B`       | Block / obstacle                | Immoveable objects                |
-| `S`       | Start position / player spawn   | Initial location for the player   |
-| `#`       | Wall / impassable barrier       | Unpassable terrain                |
-
-### Example Row:
-```
-...................................K....................................
-```
-- A row with a single `K` (enemy) at column 24.
-
----
-
-## 📁 Relationship with Codebase
-
-This file is part of a collection of level definitions in the `levels/` directory. The codebase likely uses a function like `discover_levels()` (from `utils.py`) to load and parse these files. For example:
-
-```python
-def discover_levels():
-    levels = []
-    for filename in os.listdir("levels"):
-        if filename.startswith("level") and filename.endswith(".txt"):
-            with open(f"levels/{filename}") as f:
-                grid = [list(line.strip()) for line in f]
-                levels.append(grid)
-    return levels
-```
-
-- **Input**: Text file with 40-character rows.
-- **Output**: 2D grid data used to initialize the game world.
-
----
-
-## 🔧 Configuration Implications
-
-- **Symbol Mapping**: The game engine must map characters (`K`, `B`, `S`, etc.) to specific behaviors. For example:
-  - `S` triggers the player's starting position.
-  - `K` spawns enemies that move or attack.
-- **Level Design**: Each `levelX.txt` file defines unique challenges. For instance:
-  - `level2.txt` includes:
-    - Multiple `K` enemies (e.g., at column 24 in row 6).
-    - `B` blocks (e.g., in row 12).
-    - `S` start points (e.g., row 20).
-
----
-
-## 🧪 Usage Examples
-
-### 1. **Modifying the Level**
-To add a new obstacle:
-```diff
-- ...................................K....................................
-+ ...................................B....................................
-```
-Replace `K` with `B` to turn an enemy into a block.
-
-### 2. **Analyzing the Grid**
-Use Python to inspect the level:
-```python
-with open("levels/level2.txt") as f:
-    grid = [list(line.strip()) for line in f]
-print(grid[6][24])  # Output: 'K' (enemy at row 6, column 24)
-```
-
-### 3. **Testing Load Behavior**
-Ensure the file is parsed correctly:
-```python
-def test_level2():
-    with open("levels/level2.txt") as f:
-        lines = f.readlines()
-    assert len(lines) == 30  # 30 rows
-    assert all(len(line.strip()) == 40 for line in lines)  # 40 columns
-```
-
----
-
-## 🧠 Key Observations
-
-- **Consistency**: All level files follow the same 40x30 grid format.
-- **Scalability**: New levels can be added by creating `levelX.txt` files.
-- **Extensibility**: Additional characters (e.g., `P` for power-ups) can be introduced with corresponding logic.
-
----
-
-## 📌 Notes
-
-- This format assumes a fixed grid size (30 rows × 40 columns).
-- Symbols like `#` (walls) or `S` (start) may vary based on the game's rules.
-- Ensure no trailing spaces or formatting issues in the file to avoid parsing errors.
-
---- 
-
-This documentation provides a clear understanding of how `level2.txt` fits into the broader system, enabling developers to modify or extend levels effectively.
+- **Automate Version Updates**: Use scripts or tools (e.g., `bumpversion`, `git tags`) to manage version increments.
+- **Consistency**: Ensure the version in `version.txt` matches the version in other project metadata (e.g., `setup.py`, `package.json` if applicable).
+- **Documentation**: Update release notes or changelogs when the version changes.
 
 #### Source
 
 ```
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-...................................K....................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-..........................................................BB.............
-.......................................................K................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-.................................K......................................
-........................................................................
-........................................................................
-........................K...........B...................................
-........................................................................
-........................................................................
-........................S...............................................
-........................................................................
-........................................................................
-............S...........................................................
-........................................................................
-........................................................................
-K.......................................................................
-........................................................................
-........................................................................
-............................................S...........................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-......................................................................S.
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................S...............
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-...............................................................K......B.
-........................................................................
-........................................................................
-.............................................S..........................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-....................................S.....B.............................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-.................................................K......................
-........................................................................
-........................................................................
-........................S...............................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-```
-
-### FILE: `levels/level3.txt`
-
-#### Description
-
-# levels/level3.txt Documentation
-
-## Overview
-`level3.txt` is a text-based level definition file used in a 2D grid-based game. It represents a 26x40 grid where each character corresponds to a specific game entity (e.g., obstacles, player start points, enemies). This file is parsed by the game engine to construct the level layout.
-
----
-
-## File Structure
-The file consists of 26 lines, each containing 40 characters. Each line represents a row in the level grid. The characters define the type of tile at each position.
-
-### Example Snippet
-```text
-..............................B.............................S...........
-```
-This line indicates:
-- 14 dots (`.`) → empty space
-- `B` → a block (e.g., obstacle)
-- 14 dots (`.`) → empty space
-- `S` → player start point
-
----
-
-## Key Elements
-The following characters are used in this file:
-
-| Character | Description                     | Example Usage                     |
-|-----------|----------------------------------|-----------------------------------|
-| `.`       | Empty space (walkable)          | `................................` |
-| `B`       | Block (obstacle)                | `B` in the 10th line              |
-| `S`       | Start point (player spawn)      | `S` in the 10th line              |
-| `K`       | Enemy/Key (depends on game logic) | `K` in the 14th line              |
-
-> **Note:** Specific meanings of `B`, `S`, and `K` are determined by the game's level loader logic (e.g., `load_level` function).
-
----
-
-## Usage in the Game
-The file is loaded by the game engine using a function like `load_level("levels/level3.txt")`. This function:
-1. Reads the file line by line.
-2. Maps each character to a game object (e.g., `B` → `Block`, `S` → `PlayerStart`).
-3. Constructs the level grid for rendering and gameplay.
-
-### Example Code (Pseudocode)
-```python
-def load_level(file_path):
-    with open(file_path, 'r') as f:
-        grid = [list(line.strip()) for line in f]
-    return grid
-```
-
----
-
-## Configuration Implications
-- **Level Design**: Modifying characters in this file directly alters the level layout.
-- **Game Logic**: The game must map characters to appropriate entities (e.g., `B` as a block).
-- **Environment Variables**: The `LEVELS_DIR` environment variable might specify the `levels/` directory path.
-
----
-
-## Example Level Layout
-Here's a breakdown of the 10th line from `level3.txt`:
-```
-..............................B.............................S...........
-```
-- **Row 10** (0-indexed): 
-  - Positions 14–14: `B` (block)
-  - Positions 29–29: `S` (start point)
-
----
-
-## Tips for Modifying Levels
-1. **Add New Elements**: Introduce new characters (e.g., `P` for power-up) and update the game logic to handle them.
-2. **Test Layouts**: Use the `load_level` function to verify changes.
-3. **Consistency**: Ensure all level files follow the same 40-character width and 26-row height.
-
----
-
-## Related Files
-- `level_loader.py`: Parses `.txt` level files.
-- `levels/level1.txt`–`levels/level9.txt`: Other level definitions.
-- `game_engine.py`: Uses loaded levels for rendering and gameplay.
-
-#### Source
-
-```
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-..............................B.............................S...........
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-................................................................B.......
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-......................................................S.................
-........................................................................
-........................................................................
-........................B...............................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-B.......................................................................
-........................................................................
-........................................................................
-..............K................................................S........
-........................................................................
-........................................................................
-............................................................S...........
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-......................................................................S.
-........................................................................
-........................................................................
-............S...............................................K...........
-........................................................................
-........................................................................
-B..................B....................................................
-........................................................................
-........................................................................
-............................................................B.....S.....
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-............................................................S...........
-........................................................................
-........................................................................
-..............S....................K....................................
-........................................................................
-........................................................................
-```
-
-### FILE: `levels/level4.txt`
-
-#### Description
-
-# Level File Documentation: `levels/level4.txt`
-
-This file represents a text-based level layout for a game or simulation. Each line corresponds to a row in the level grid, with characters denoting specific elements (e.g., player start points, obstacles, interactive objects). Below is a detailed breakdown of its structure, purpose, and relationship to the repository.
-
----
-
-## 🧩 File Structure
-
-The file is a 2D grid of characters, where each character represents a specific game element. Here's a sample excerpt from `level4.txt`:
-
-```
-S...................BB..................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-S.....B.......................K.........................................
-........................................................................
-........................................................................
-.......................................................K................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-..........B.........K...................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-....................................S...................................
-........................................................................
-........................................................................
-BB..........................................................B...........
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-BB......................................................................
-........................................................................
-........................................................................
-.................................................K.............BB.......
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-................................................................S.......
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-...............................................................S........
-........................................................................
-........................................................................
-....................................S...................................
-........................................................................
-........................................................................
-........................................K...............................
-........................................................................
-........................................................................
-.......................................................B..........S.....
-........................................................................
-........................................................................
-..............S......................................................... 
-```
-
-### Key Characters
-| Character | Description                     |
-|-----------|---------------------------------|
-| `S`       | Player start position           |
-| `B`       | Block/Obstacle                  |
-| `K`       | Key/Interactive object          |
-| `.`       | Empty space                     |
-
----
-
-## 📁 Relationship to Repository
-
-### 1. **Level Loading Mechanism**
-The file is parsed by a function (e.g., `load_level`) that reads the grid and initializes game objects. For example:
-```python
-def load_level(file_path):
-    with open(file_path, 'r') as f:
-        grid = [list(line.strip()) for line in f]
-    return grid
-```
-This function is likely used across all level files (`level1.txt`, `level2.txt`, etc.).
-
-### 2. **Game Logic Integration**
-The grid data is used to:
-- Place entities (e.g., player, enemies, items).
-- Define collision boundaries.
-- Trigger events (e.g., collecting a key `K`).
-
-### 3. **Configuration Implications**
-- **Grid Size**: Each level file must conform to a fixed grid size (e.g., 20x20 cells) expected by the game engine.
-- **Element Mapping**: The game engine maps characters to specific behaviors (e.g., `K` → `Key` class).
-
----
-
-## 🧠 Key Functions/Classes
-
-### `LevelLoader`
-Responsible for parsing level files:
-```python
-class LevelLoader:
-    def __init__(self, file_path):
-        self.file_path = file_path
-
-    def load(self):
-        with open(self.file_path, 'r') as f:
-            return [list(line.strip()) for line in f]
-```
-
-### `GameEngine`
-Uses the loaded grid to initialize the game state:
-```python
-class GameEngine:
-    def __init__(self, level_data):
-        self.grid = level_data
-        self.player_pos = self.find_char('S')
-
-    def find_char(self, char):
-        for y, row in enumerate(self.grid):
-            for x, cell in enumerate(row):
-                if cell == char:
-                    return (x, y)
-        return None
-```
-
----
-
-## 🔄 Environment & Usage
-
-### 🧪 Example: Modifying the Level
-To add a new obstacle:
-1. Edit `level4.txt`:
-   ```text
-   ...B... (add a 'B' at position (5, 10))
-   ```
-2. Re-run the game to see the change.
-
-### 🧪 Example: Custom Level
-Create a new file `levels/level10.txt` with a unique layout:
-```
-S............K.............
-....B.......................
-....................B.....
-.............................
-```
-The game engine will parse it as long as it follows the same format.
-
----
-
-## 📌 Notes
-
-- **Consistency**: All level files follow the same structure and character mappings.
-- **Scalability**: New elements can be added by extending the character-to-class mapping in `GameEngine`.
-- **Testing**: Levels can be validated using unit tests that check for valid characters and grid dimensions.
-
----
-
-## 🧾 Summary
-
-`levels/level4.txt` is a text-based level definition file that:
-- Uses a grid of characters to represent game elements.
-- Is parsed by `LevelLoader` and integrated into the game via `GameEngine`.
-- Follows a consistent structure with other level files in the repository.
-
-#### Source
-
-```
-S...................BB..................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-S.....B.......................K.........................................
-........................................................................
-........................................................................
-.......................................................K................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-..........B.........K...................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-....................................S...................................
-........................................................................
-........................................................................
-BB..........................................................B...........
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-BB......................................................................
-........................................................................
-........................................................................
-.................................................K.............BB.......
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-................................................................S.......
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-...............................................................S........
-........................................................................
-........................................................................
-....................................S...................................
-........................................................................
-........................................................................
-........................................K...............................
-........................................................................
-........................................................................
-.......................................................B..........S.....
-........................................................................
-........................................................................
-..............S.........................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-```
-
-### FILE: `levels/level5.txt`
-
-#### Description
-
-# levels/level5.txt Documentation
-
-## Overview
-`level5.txt` is a level configuration file used in a grid-based game or simulation. It defines the layout of level 5 using a 40x16 character grid. Each character represents a specific game element, such as obstacles, entities, or interactive objects.
-
----
-
-## File Structure
-The file contains 16 lines, each with exactly 40 characters. The characters represent different elements in the game world. Below is a breakdown of the structure:
-
-```
-Line 0: ........................................................................
-Line 1: ........................................................................
-Line 2: ........................................................................
-Line 3: ........................................................................
-Line 4: ........................................................................
-Line 5: ........................................................................
-Line 6: .......B.........................................BB.....................
-Line 7: ........................................................................
-Line 8: ........................................................................
-Line 9: ....................S.........S.........S.........S.....................
-Line 10: ........................................................................
-Line 11: ........................................................................
-Line 12: ...........................S............................................
-Line 13: ........................................................................
-Line 14: ........................................................................
-Line 15: .......K................................................................
-```
-
----
-
-## Symbol Definitions
-The following symbols are used in the file (based on common conventions and context from other level files):
-
-| Symbol | Description                  |
-|--------|------------------------------|
-| `.`    | Empty space / background     |
-| `B`    | Block / obstacle             |
-| `S`    | Start position / player spawn |
-| `K`    | Key / collectible item       |
-| `#`    | Wall / impassable obstacle   |
-| `E`    | Enemy / NPC                    |
-
-> **Note**: The exact meaning of symbols may depend on the game's logic defined in the codebase (e.g., `Level` class).
-
----
-
-## Relationship with Codebase
-This file is loaded by the `read_level` function, which parses the grid and passes it to the `Level` class for game logic. For example:
-
-```python
-def read_level(file_path):
-    with open(file_path, 'r') as f:
-        return [list(line.strip()) for line in f]
-
-class Level:
-    def __init__(self, grid):
-        self.grid = grid
-        # Game logic based on grid data
-```
-
-The `Level` class likely uses this grid to:
-- Place entities (e.g., players, enemies)
-- Detect collisions
-- Trigger events (e.g., key collection)
-- Render the level visually
-
----
-
-## Configuration Implications
-- **Level Design**: Changes to this file directly affect the layout and challenges of level 5.
-- **Game Balance**: Adjusting the positions of `S`, `K`, or `B` can alter difficulty or gameplay flow.
-- **Consistency**: Ensure all level files follow the same 40x16 format to avoid parsing errors.
-
----
-
-## Usage Examples
-### 1. Loading the Level
-```python
-from game.level_loader import read_level
-level_grid = read_level("levels/level5.txt")
-```
-
-### 2. Inspecting the Grid
-```python
-for row in level_grid:
-    print("".join(row))
-```
-
-### 3. Modifying the Level
-To add a new block:
-```python
-level_grid[6][3] = "B"  # Place a block at row 6, column 3
-```
-
----
-
-## Notes
-- This file is part of a series of level files (`level1.txt` through `level9.txt`), each representing a unique stage.
-- The game likely uses a consistent symbol set across all levels for uniformity.
-- For debugging, visualize the grid using a terminal or graphical renderer to confirm layout accuracy.
-
-#### Source
-
-```
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-.......B.........................................BB.....................
-........................................................................
-........................................................................
-....................S.........S.........S.........S.....................
-........................................................................
-........................................................................
-...........................S............................................
-........................................................................
-........................................................................
-.......K................................................................
-........................................................................
-........................................................................
-......S.................................................................
-........................................................................
-........................................................................
-......K.................BB..............................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-.........K..............................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-...........S............................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-..................K.....................................................
-........................................................................
-........................................................................
-S.......................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-K...........................................S...........................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........S...............................................................
-........................................................................
-```
-
-### FILE: `levels/level6.txt`
-
-#### Description
-
-# Level File Documentation: `levels/level6.txt`
-
-## Overview
-The file `levels/level6.txt` defines the layout of a game level in a text-based grid format. It is part of a collection of level files used by a game engine to generate game worlds. Each line in the file represents a row in the game grid, with characters symbolizing game entities such as blocks, keys, and start positions.
-
----
-
-## File Structure
-The file consists of 30 lines of text, each representing a row in the game grid. The characters in each line correspond to specific game entities:
-
-### Example Line:
-```
-............B...........................................................
-```
-- **`B`**: Block (impassable object)
-- **`.`**: Empty space (walkable)
-- **`S`**: Start position (player spawn point)
-- **`K`**: Key (collectible item)
-
----
-
-## Key Symbols and Their Meanings
-| Symbol | Description                  |
-|--------|------------------------------|
-| `B`    | Block (impassable obstacle)  |
-| `S`    | Start position (player starts here) |
-| `K`    | Key (collectible item)       |
-| `.`    | Empty space (walkable)       |
-
----
-
-## How the File is Loaded
-The game engine uses a function like `load_level(filename)` to parse this file. Here's a simplified example of how this might work:
-
-```python
-def load_level(filename):
-    with open(filename, 'r') as file:
-        grid = [line.strip() for line in file]
-    return grid
-```
-
-- **Input**: `levels/level6.txt`
-- **Output**: A list of strings, where each string represents a row in the grid.
-
----
-
-## Game Logic Integration
-The game engine uses the parsed grid to:
-1. Render the level visually.
-2. Place entities (e.g., blocks, keys, start positions).
-3. Handle player interactions (e.g., collecting keys, avoiding blocks).
-
-For example:
-- The `S` symbols indicate where the player starts.
-- The `K` symbols represent keys that the player must collect to progress.
-- The `B` symbols block the player's movement.
-
----
-
-## Configuration and Environment
-- **Level Directory**: The game expects level files in the `levels/` directory. This is likely hardcoded or configurable via an environment variable like `LEVELS_DIR`.
-- **Game Engine**: The engine's logic for parsing symbols is defined in the codebase (e.g., `game_engine.py`), but the exact mapping of symbols to entities is not shown in the provided context.
-
----
-
-## Usage Example
-To load and use this level in the game:
-1. **Load the file**:
-   ```python
-   level_data = load_level("levels/level6.txt")
-   ```
-2. **Render the grid**:
-   ```python
-   for row in level_data:
-       print(row)
-   ```
-3. **Initialize game objects**:
-   - Spawn the player at `S` positions.
-   - Place blocks at `B` positions.
-   - Add keys at `K` positions.
-
----
-
-## Relationships with Other Files
-- **Code Tree**: The `load_level` function (not shown in the provided code) likely resides in a module like `game_engine.py`, which processes all level files.
-- **Other Levels**: This file follows the same format as `level1.txt` through `level9.txt`, ensuring consistency across levels.
-- **Game Logic**: The symbols in this file are interpreted by the game engine, which maps them to in-game entities (e.g., `B` → `Block` class).
-
----
-
-## Notes
-- The exact behavior of symbols like `B`, `S`, and `K` depends on the game's internal logic, which is not explicitly shown in the provided context.
-- This file is part of a larger system where level data drives gameplay mechanics (e.g., collecting keys to unlock doors).
-
-#### Source
-
-```
-............B...........................................................
-........................................................................
-........................................................................
-......................................................S.................
-........................................................................
-........................................................................
-..................S........S............................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-..................B............................................K........
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-..................................................K.....................
-........................................................................
-........................................................................
-..............S.........................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-..................................................S.........K...........
-........................................................................
-........................................................................
-..........................................S.............................
-........................................................................
-........................................................................
-B.......................................................................
-........................................................................
-........................................................................
-......................K.................................................
-........................................................................
-........................................................................
-S.......................................................................
-........................................................................
-........................................................................
-.......K...........................B...........................K........
-........................................................................
-........................................................................
-........................................................................
-```
-
-### FILE: `levels/level7.txt`
-
-#### Description
-
-# Level 7 File Documentation (`levels/level7.txt`)
-
-This file represents the 7th level of a text-based game, structured as a 20x40 grid. It defines the layout of obstacles, collectibles, and enemies using specific character symbols. Below is a detailed breakdown of its structure, purpose, and integration with the codebase.
-
----
-
-## 🧩 File Structure
-
-The file contains **20 lines** of **40 characters each**, forming a grid. Each character represents a specific element in the game world. The format is consistent across all level files (`level1.txt` to `level9.txt`).
-
-### Example Snippet
-```plaintext
-....................................S.................S................. 
-........................................................................
-........................................................................
-.............................................K..........................
-```
-
----
-
-## 📌 Symbols and Their Meanings
-
-| Symbol | Description                     | Example Usage                     |
-|--------|---------------------------------|-----------------------------------|
-| `S`    | **Start/Player Position**       | Indicates the player's spawn point|
-| `K`    | **Enemy/Obstacle**              | Represents enemies or blockages   |
-| `B`    | **Breakable Block**             | Can be destroyed by the player    |
-| `.`    | **Empty Space**                 | Passable area                     |
-
-> **Note**: The exact behavior of these symbols is determined by the game's logic (e.g., `S` might trigger a quest, `K` could be an enemy to defeat).
-
----
-
-## 📦 Integration with Codebase
-
-### Key Function: `discover_level()`
-This function reads the level file and constructs a 2D grid for the game engine. It:
-- Validates the file format (20 rows × 40 characters).
-- Maps symbols to in-game entities.
-- Returns a structured representation of the level.
-
-#### Example Code (Pseudocode)
-```python
-def discover_level(file_path):
-    with open(file_path, 'r') as f:
-        grid = [list(line.strip()) for line in f]
-    return grid
-```
-
----
-
-## 🔄 Configuration Implications
-
-- **File Location**: All level files are stored in the `levels/` directory.
-- **Naming Convention**: Levels are named `level1.txt` through `level9.txt`.
-- **Grid Size**: Hardcoded to 20 rows × 40 columns. Modifying this requires updating the game engine.
-
----
-
-## 🧪 Usage Examples
-
-### 1. **Creating a New Level File**
-Follow the same structure:
-```plaintext
-S...............................
-...............................
-...............................
-...............................
-...............................
-...............................
-...............................
-...............................
-...............................
-...............................
-...............................
-...............................
-...............................
-...............................
-...............................
-...............................
-...............................
-...............................
-...............................
-...............................
-```
-
-### 2. **Loading Level 7 in the Game**
-```python
-level_grid = discover_level("levels/level7.txt")
-# Use level_grid to render the game world
-```
-
----
-
-## 📝 Notes
-
-- **Consistency**: All level files use the same 20×40 grid and symbol set.
-- **Extensibility**: New symbols can be added by updating the `discover_level()` logic.
-- **Validation**: Ensure all lines are exactly 40 characters long to avoid rendering errors.
-
----
-
-## 📄 File Comparison with Other Levels
-
-| Feature          | `level7.txt`                     | Other Levels (`level1.txt`–`level9.txt`) |
-|------------------|----------------------------------|-------------------------------------------|
-| Grid Size        | 20×40                            | 20×40                                     |
-| Symbols Used     | `S`, `K`, `B`, `.`               | Same                                      |
-| Complexity       | Moderate (6 `S`, 5 `K`, 3 `B`)   | Varies by level                           |
-| Purpose          | Test player navigation and combat| Varies (e.g., puzzles, boss fights)       |
-
----
-
-This documentation ensures clarity for developers modifying or extending the game's level system.
-
-#### Source
-
-```
-....................................S.................S.................
-........................................................................
-........................................................................
-.............................................K..........................
-........................................................................
-........................................................................
-...................................S....................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-.............................................K..........................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-............................................................B...........
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-....................................K..........................S........
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-.....................K...........................K......................
-........................................................................
-........................................................................
-........................................S...............................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-......................S.....................S...........................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................S...............................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................K...............K...............................
-........................................................................
-........................................................................
-.......BB...............................................................
-........................................................................
-........................................................................
-K.......................................................................
-........................................................................
-........................................................................
-......................................................BB................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-K.......................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-B........BB....................................................B........
-........................................................................
-........................................................................
-..........................................B.............................
-........................................................................
-........................................................................
-..................K.....................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................S...............................................
-........................................................................
-........................................................................
-........................................................B...............
-........................................................................
-........................................................................
-..................B........S............................................
-```
-
-### FILE: `levels/level8.txt`
-
-#### Description
-
-# Level File Documentation: `levels/level8.txt`
-
----
-
-## 📁 File Overview
-The `level8.txt` file is a text-based level definition file used in a grid-based game or simulation. It represents the 8th level of a series of predefined levels, each stored in the `levels/` directory. The file's content is a 24-line grid where each character represents a specific game element (e.g., obstacles, collectibles, or interactive objects).
-
----
-
-## 🧩 File Structure
-The file consists of 24 rows, each containing a sequence of characters. The structure is as follows:
-
-```
-......................................................................S.
-........................................................................
-........................................................................
-............................................................B...........
-........................................................................
-........................................................................
-............................................................B...........
-........................................................................
-........................................................................
-....................................S...................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-B.......................................................................
-........................................................................
-........................................................................
-.........S..............................................................
-........................................................................
-........................................................................
-..........S.............................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-............S...........................................................
-........................................................................
-........................................................................
-..........S.............................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-S.......................................................................
-........................................................................
-........................................................................
-................................................S.......................
-........................................................................
-........................................................................
-......S.............................S.....K.............................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-```
-
-### Key Observations:
-- **Grid Size**: 24 rows × ~40 columns (exact width varies per line).
-- **Symbols**: Characters like `B`, `S`, `K`, and `.` (empty space) are used to define elements.
-- **Unique Features**: 
-  - A single `S` at the end of the first line (`S.`).
-  - Two `B` blocks in the 4th and 7th rows.
-  - A `K` (key) in the 24th row.
-  - Multiple `S` (collectibles or start points) scattered across the grid.
-
----
-
-## 🔍 Symbol Mapping (Hypothetical)
-Based on common conventions in grid-based games, the symbols likely represent:
-
-| Symbol | Description                  |
-|--------|------------------------------|
-| `.`    | Empty space (walkable)       |
-| `B`    | Block (obstacle)             |
-| `S`    | Collectible item (e.g., star)|
-| `K`    | Key (interactive object)     |
-| `#`    | Wall (impassable)            |
-| `P`    | Player start position        |
-
-> **Note**: Actual meanings depend on the game's logic. This mapping is inferred from typical use cases.
-
----
-
-## 🔄 Relationships with Other Files
-- **`discover_levels()` Function**: The application likely loads this file via a function like `discover_levels()` in `level_loader.py`, which reads all `.txt` files in the `levels/` directory.
-- **Shared Format**: All level files (`level1.txt`–`level9.txt`) follow the same grid-based structure, with variations in element placement.
-- **Configuration**: The `LEVELS_DIR` environment variable (if used) would point to the `levels/` directory.
-
----
-
-## 🛠️ Configuration Implications
-- **Level Loading**: The game engine parses this file to generate level geometry, placing objects based on symbols.
-- **Customization**: Modifying this file allows designers to tweak level difficulty, layout, or objectives.
-- **Scalability**: Adding new levels follows the same format, ensuring consistency across the game.
-
----
-
-## 🧪 Usage Examples
-### Example 1: Loading the Level
-```python
-# Pseudocode for loading the level
-def load_level(file_path):
-    with open(file_path, 'r') as f:
-        grid = [list(line.strip()) for line in f]
-    return grid
-
-level_data = load_level("levels/level8.txt")
-```
-
-### Example 2: Rendering the Grid
-```python
-for row in level_data:
-    print("".join(row))
-```
-
-### Example 3: Symbol Analysis
-```python
-# Count collectibles ('S') in the level
-s_count = sum(row.count('S') for row in level_data)
-print(f"Total collectibles: {s_count}")
-```
-
----
-
-## 📌 Notes
-- **File Integrity**: Ensure the file is saved with proper line endings (LF or CRLF) to avoid parsing issues.
-- **Versioning**: Changes to this file should be tracked in version control to preserve level designs.
-- **Testing**: Validate the grid against the game's parser to ensure compatibility.
-
----
-
-This documentation provides a clear understanding of `level8.txt`'s role in the game's level system, its structure, and how it interacts with other components.
-
-#### Source
-
-```
-......................................................................S.
-........................................................................
-........................................................................
-............................................................B...........
-........................................................................
-........................................................................
-............................................................B...........
-........................................................................
-........................................................................
-....................................S...................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-B.......................................................................
-........................................................................
-........................................................................
-.........S..............................................................
-........................................................................
-........................................................................
-..........S.............................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-............S...........................................................
-........................................................................
-........................................................................
-..........S.............................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-S.......................................................................
-........................................................................
-........................................................................
-................................................S.......................
-........................................................................
-........................................................................
-......S.............................S.....K.............................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-```
-
-### FILE: `levels/level9.txt`
-
-#### Description
-
-# `levels/level9.txt` Documentation
-
-This file represents a level configuration for a grid-based game, likely used to define the layout of obstacles, collectibles, and other interactive elements. It is part of a series of level files (`level1.txt` through `level9.txt`) stored in the `levels/` directory, each corresponding to a unique game stage.
-
----
-
-## 🧩 **File Structure and Format**
-
-Each line in the file corresponds to a row in the game grid. The file uses a 40-character-wide grid (as seen in the content) and consists of the following elements:
-
-- **`.`**: Empty space (walkable or transparent).
-- **`B`**: Block or wall (impassable).
-- **`K`**: Key (collectible item).
-- **`S`**: Start position (player's initial location).
-- **`E`**: Exit (goal point, though not present in this file).
-
-### Example Snippet
-```plaintext
-..........................................BB......................B.....
-```
-This line represents a row with:
-- 20 dots (empty space)
-- 2 `B`s (blocks)
-- 10 dots
-- 1 `B` (block)
-- 10 dots
-
----
-
-## 🧾 **Character Mapping and Meaning**
-
-| Character | Description              | Example Usage                      |
-|----------|--------------------------|------------------------------------|
-| `.`      | Empty space              | `..........` (open path)           |
-| `B`      | Block/Wall               | `BB` (solid barrier)               |
-| `K`      | Key (collectible)        | `K` (player must collect to progress) |
-| `S`      | Start position           | `S` (player's initial location)    |
-
-> **Note**: The `E` (exit) character is not present in this file, suggesting it may be defined in later levels or handled by game logic.
-
----
-
-## 🧩 **Relationship with Other Files**
-
-- **Code Integration**: The file is processed by the `discover_levels()` function in the codebase, which reads all `.txt` files in the `levels/` directory to construct game levels.
-- **Level Series**: This is the 9th level in a sequence, likely increasing in complexity. Other levels (e.g., `level8.txt`, `level7.txt`) follow a similar structure but with unique layouts.
-
----
-
-## 🛠️ **Configuration Implications**
-
-- **Static Layout**: The level is hard-coded in the file. Modifying it requires editing the text directly.
-- **Game Logic Dependency**: The game engine must map characters like `K` and `S` to specific behaviors (e.g., key collection, spawn points).
-- **Pathing**: The grid's structure dictates the player's movement and interaction with the environment.
-
----
-
-## 📦 **Usage Examples**
-
-### 1. **Editing the Level**
-To add a new block:
-```plaintext
-..........................................BB......................B.....
-```
-Change to:
-```plaintext
-..........................................BBB............B.........
-```
-This adds an extra block in the middle row.
-
-### 2. **Game Logic Integration**
-A developer might parse this file to:
-```python
-def load_level(file_path):
-    with open(file_path) as f:
-        grid = [list(line.strip()) for line in f]
-    return grid
-```
-
-### 3. **Testing Level Complexity**
-Use this file to test pathfinding algorithms or collision detection:
-```python
-def is_valid_position(grid, x, y):
-    return grid[y][x] == '.' or grid[y][x] == 'S' or grid[y][x] == 'K'
-```
-
----
-
-## 📌 **Key Observations**
-
-- **Repetition of Patterns**: The file contains repeated `BB` sequences, suggesting structured barriers or platforms.
-- **Sparse Collectibles**: Only a few `K` and `S` markers are present, indicating limited interactions.
-- **Symmetry**: Some rows mirror each other (e.g., `..........B...` and `............K`), hinting at intentional design.
-
----
-
-## 🧩 **Summary**
-
-`level9.txt` is a text-based level definition for a grid-based game, using simple characters to represent environmental elements. It is part of a larger set of levels, each contributing to the game's progression. The file's structure and character set directly influence gameplay mechanics, requiring careful design to ensure challenge and coherence.
-
-#### Source
-
-```
-........................................................................
-........................................................................
-........................................................................
-..........................................BB......................B.....
-........................................................................
-........................................................................
-........................................BB..............................
-........................................................................
-........................................................................
-..........B.............................................................
-........................................................................
-........................................................................
-..................................................................K.....
-........................................................................
-........................................................................
-K.......................................................................
-........................................................................
-........................................................................
-K.....................................................K...........BB....
-........................................................................
-........................................................................
-............K...........K...............................................
-........................................................................
-........................................................................
-............................S.........................................K.
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-B......................................................BB...............
-........................................................................
-........................................................................
-.................................B......................................
-........................................................................
-........................................................................
-......................BB................................................
-........................................................................
-........................................................................
-........B...............K...............................BB..............
-........................................................................
-........................................................................
-............K...........................................................
-........................................................................
-........................................................................
-............................K...........................................
-........................................................................
-........................................................................
-BB................................................................B.....
-........................................................................
-........................................................................
-................................................BB......................
-........................................................................
-........................................................................
-........................S...............................................
-........................................................................
-........................................................................
-S.......................................................................
-........................................................................
-........................................................................
-..............................K.........................................
-........................................................................
-........................................................................
-....................................B...................................
-........................................................................
-........................................................................
-............K...................................K.......................
-........................................................................
-........................................................................
-..............................S...................S.....................
-........................................................................
-........................................................................
-B.......................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-........................................................................
-............K.............................BB............................
-........................................................................
+0.9.2
 ```
 
 ### FILE: `README.md`
 
 #### Description
 
-# 1942-lite Documentation
+# 1942-lite Shooter Game
 
-## Overview
-`1942-lite` is a Pygame-based top-down shooter game with support for custom level design, dynamic asset loading, and procedural animations. The project structure and configuration allow for easy expansion and customization.
-
----
-
-## Key Features
-
-### 1. **Dynamic Asset Loading**
-- **PNG Sprites**: Supports custom graphics for player/enemies.
-  - Required assets: `player.png`, `enemy_shooter.png`, `enemy_kamikaze.png`, `enemy_big.png`
-  - Fallback: Default shapes (triangles, circles) when assets are missing
-- **Explosion Animations**: 
-  - Uses `assets/explosion_0.png` to `assets/explosion_5.png`
-  - Procedural fallback if animation frames are missing
-
-### 2. **Multi-Level System**
-- **Level Files**: ASCII-based level definitions in `levels/`
-  - Format: Each character represents a game object
-  - Example:
-    ```
-    S K B
-    . . .
-    ```
-  - `S` = Shooter enemy, `K` = Kamikaze, `B` = Big enemy, `.` = Empty space
-- **Auto-Discovery**: Loads all `levels/level*.txt` files in numerical order
-- **Safe Zone**: Progression triggers when player reaches designated safe area (implementation details in game code)
+A lightweight 2D shooter game inspired by classic arcade titles, featuring player mechanics, enemy AI, power-ups, and level progression.
 
 ---
 
-## Repository Structure
+## 📌 Overview
 
-```
-1942-lite/
-├── main.py                  # Game entry point
-├── assets/                  # Sprite/explosion animations
-│   ├── player.png
-│   ├── enemy_shooter.png
-│   └── explosion_0.png...5.png
-├── levels/                  # Level definitions
-│   ├── level1.txt
-│   ├── level2.txt
-│   └── ... (up to level9.txt)
-└── README.md                # This document
-```
+This project is a 2D shooter game built using Python's [Pygame](https://www.pygame.org/) library. It includes:
+- Player movement and shooting
+- Enemy AI and wave-based combat
+- Power-up mechanics (e.g., enhanced fire, diagonal shooting)
+- Level progression system
+- Safe zone victory condition
+
+The game supports multiple levels, configurable difficulty, and includes a simple HUD for tracking lives, ammo, and power-up timers.
 
 ---
 
-## Configuration & Usage
+## 🧰 Prerequisites
 
-### 1. **Requirements**
-```bash
-pip install pygame>=2.5.2
-```
+- Python 3.7+
+- [Pygame](https://www.pygame.org/) (`pygame>=2.5.2`)
+- [Pygbag](https://pygbag.readthedocs.io/) (for web deployment)
 
-### 2. **Running the Game**
+---
+
+## 📦 Installation
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+---
+
+## 🕹️ Usage
+
+### Run the Game
 ```bash
 python main.py
 ```
 
-### 3. **Creating New Levels**
-- Add a new file to `levels/` named `levelX.txt` (X = next number)
-- Use ASCII characters to define enemies:
-  - `S` - Shooter (standard enemy)
-  - `K` - Kamikaze (suicide bomber)
-  - `B` - Big (larger enemy)
-  - `.` or space - Empty tile
-
-**Example level1.txt**:
-```
-S S S
-. . .
-B K S
+### Specify a Level
+```bash
+python main.py --level 3
 ```
 
 ---
 
-## Code Structure & Relationships
+## 📁 Project Structure
 
-### 1. **Main Game Logic**
-- `main.py` contains:
-  - Game loop with Pygame integration
-  - Level loading system (reads `levels/level*.txt`)
-  - Player/enemy control systems
-  - Collision detection and scoring
-
-### 2. **Asset Management**
-- `assets/` directory is scanned at startup
-- Fallback rendering logic in game code for missing assets
-
-### 3. **Level Parsing**
-- Automatic discovery of `levels/level*.txt`
-- Each level file is parsed into a grid-based enemy spawning system
-- Safe zone detection logic (implementation details in game code)
-
----
-
-## Controls
-
-| Action         | Key        | Description                  |
-|----------------|------------|------------------------------|
-| Move Player    | Arrow Keys | WASD also supported          |
-| Shoot          | Space      | Fires bullets                |
-| Pause          | P          | Toggles game pause           |
-| Toggle Debug   | F1         | Shows/hides debug information|
-| Quit           | Esc / Q    | Exits the game               |
-
----
-
-## Customization Tips
-
-### Adding New Assets
-1. Place PNG files in `assets/`
-2. Ensure filenames match expected names:
-   - `player.png` (player sprite)
-   - `enemy_shooter.png` (standard enemy)
-   - `enemy_kamikaze.png` (suicide enemy)
-   - `enemy_big.png` (large enemy)
-   - `explosion_0.png` to `explosion_5.png` (animation frames)
-
-### Creating New Levels
-1. Create `levels/levelX.txt` where X is next number
-2. Use ASCII characters to define enemy positions
-3. Add to `levels/` directory - game auto-detects new levels
-
----
-
-## Implementation Notes
-
-- **Level Progression**: The game advances to the next level when the player reaches the "Safe Zone" (specific coordinates in level files)
-- **Enemy Behavior**: 
-  - `S` enemies move horizontally
-  - `K` enemies fly toward the player
-  - `B` enemies are larger and slower
-- **Collision System**: Detects player-enemy and bullet-enemy interactions
-
----
-
-## Example Level File (level1.txt)
 ```
-S S S
-. . .
-B K S
+/levels/               # Level files (level1.txt, level2.txt, etc.)
+/main.py               # Main game logic
+/README.md             # This file
+/requirements.txt      # Python dependencies
+/build/version.txt     # Version number (0.9.2)
 ```
-This would create:
-- 3 shooter enemies in the top row
-- Empty space in the middle row
-- 1 big enemy, 1 kamikaze, and 1 shooter in the bottom row
 
 ---
 
-## Debug Mode
-Enabled with F1 key:
-- Shows player position
-- Displays enemy spawn points
-- Shows collision boundaries
-- Displays score and level information
+## 🎮 Key Features
+
+- **Player Controls**: Arrow keys or touch controls (mobile/web)
+- **Shooting**: Normal and enhanced fire modes
+- **Power-Ups**:
+  - `health`: Restore 1 life
+  - `ammo`: Add 50 bullets
+  - `enhanced`: Temporary rapid-fire mode
+  - `fan`: Diagonal shooting for 3 seconds
+- **Enemies**: Various types with different behaviors
+- **Level System**: Progress through multiple levels
+- **Safe Zone**: Victory condition when reaching the bottom of the screen
 
 ---
 
-## Known Limitations
-- Level files must be named `levelX.txt` with X as integer
-- Explosion animations require exactly 6 frames (0-5)
-- Missing assets will use default shapes (not ideal for gameplay)
+## 🧠 Configuration
 
---- 
+### Level Files
+- Located in `/levels/`
+- Format: `levelX.txt` (e.g., `level1.txt`)
+- Define enemy waves, bullet patterns, and level geometry
 
-This documentation provides the necessary information to understand the project structure, customize the game, and create new levels. For detailed implementation specifics, refer to the `main.py` source code.
+### Environment Variables
+- `LEVELS_DIR`: Directory containing level files (default: `./levels`)
+
+---
+
+## 🧩 Development
+
+### Adding New Levels
+1. Create a new `levelX.txt` file in `/levels/`
+2. Define enemy spawn patterns and level boundaries
+
+### Contributing
+1. Fork the repository
+2. Create a new branch for your feature
+3. Submit a pull request
+
+---
+
+## 📦 Version
+Current version: `0.9.2` (from `build/version.txt`)
+
+---
+
+## 📄 License
+This project is open-source and distributed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 #### Source
 
 ```md
-# 1942-lite — Top-Down Warplane Shooter (Pygame)
 
-**What is new (v2):**
-- PNG **sprites** supported for enemies and player (drop images into `assets/`).
-- **Explosion animations** on kills (uses `assets/explosion_0..5.png` if available, otherwise procedural).
-- **Multi-level** flow: `levels/level1.txt` → `levels/level2.txt` → ... (auto-discovery).
-
-## Controls
-- Move: Arrow keys / W A S D
-- Shoot: Space
-- Pause: P
-- Toggle debug: F1
-- Quit: Esc / Q
-
-## Run
-```bash
-pip install pygame>=2.5.2
-python main.py
-```
-
-## Assets (PNG sprites)
-Put any of these optional files in `assets/`:
-- `player.png`
-- `enemy_shooter.png`
-- `enemy_kamikaze.png`
-- `enemy_big.png`
-- `explosion_0.png` ... `explosion_5.png`
-
-If any file is missing, the game draws a clean fallback shape.
-
-## Level files
-Add `levels/level2.txt`, `levels/level3.txt`, ... using the ASCII-letter scheme:
-- `S` shooter, `K` kamikaze, `B` big (or any clustered letter → big)
-- `.` or space = empty
-
-The engine loads all matching `levels/level*.txt` in ascending order and advances when you reach the **Safe Zone**.
 
 ```
 
@@ -2248,167 +248,232 @@ The engine loads all matching `levels/level*.txt` in ascending order and advance
 # Game Documentation
 
 ## Overview
-The provided code is a 2D shooter game implementation using Python and Pygame. The game features level progression, enemy spawning, power-ups, and collision detection. The core logic is encapsulated in the `Game` class, which manages the game loop, rendering, and interactions between game entities.
+This is a 2D shooter game inspired by classic arcade titles like 1942. The game features a player ship, enemies, bullets, power-ups, and a scrolling background. The code uses Pygame for rendering and input handling, with an async game loop for smooth animations and transitions.
+
+## Key Components
+
+### 1. **Main Game Class: `Game`**
+The central class that manages the game state, rendering, and interactions.
+
+#### Key Methods:
+- `__init__`: Initializes game components (player, enemies, bullets, background, etc.).
+- `update`: Async method that handles game logic (movement, collisions, power-ups).
+- `render`: Draws all game elements to the screen.
+- `handle_input`: Processes keyboard, mouse, and touch inputs.
+- `next_level_or_win`: Transitions to the next level or ends the game.
+
+#### Key Attributes:
+- `player_sprite`: The player's ship object.
+- `enemies`: List of enemy sprites.
+- `player_bullets`: List of bullets fired by the player.
+- `enemy_bullets`: List of bullets fired by enemies.
+- `drops`: Power-up items that appear after defeating enemies.
+- `fx`: Explosion effects.
+- `bg`: Background object (scrolling or static).
 
 ---
 
-## Key Classes
+### 2. **Player Sprite: `PlayerSprite`**
+Controls the player's ship, including movement, shooting, and power-ups.
 
-### `Game`
-The central game class handling:
-- **Game loop** (`run()`): Manages event handling, updates, and rendering.
-- **State management**: Tracks player lives, power-ups, and game progression.
-- **Entity interactions**: Handles collisions between bullets, enemies, and the player.
+#### Key Methods:
+- `update`: Handles movement and shooting.
+- `shoot`: Fires bullets based on player input.
+- `damage`: Reduces player health and triggers invincibility.
+- `grant_enhanced`: Grants a temporary bullet spread power-up.
+- `grant_fan`: Grants diagonal shooting for a limited time.
 
-**Key Methods:**
-- `run()`: Main game loop with event handling and state updates.
-- `update(dt, dt_ms)`: Updates game logic (enemy movement, collisions, etc.).
-- `render()`: Draws all game elements (background, sprites, HUD).
-- `handle_events()`: Processes user input and game events.
-
-**Attributes:**
-- `player_sprite`: The player's ship (instance of a sprite class).
-- `enemies`: Group of enemy sprites.
-- `timeline`: Manages enemy spawning and safe zone activation.
-- `bg`: Background object for scrolling levels.
+#### Power-Ups:
+- `enhanced`: Wider bullet spread for 5 seconds.
+- `fan`: Diagonal shooting for 5 seconds.
+- `health`: Increases player lives.
+- `ammo`: Increases bullet capacity.
 
 ---
 
-### `Enemy` Subclasses
-- `ShooterEnemy`: Enemy that fires bullets.
-- Other enemies: Likely handle different behaviors (e.g., movement patterns).
+### 3. **Enemy Classes**
+Various enemy types with different behaviors.
 
-**Example:**
+#### Example:
+- `ShooterEnemy`: Fires bullets periodically.
+- `Enemy`: Base class for all enemies, handling movement and collision.
+
+#### Key Features:
+- Enemies spawn from level files.
+- Collisions with bullets or the player trigger damage.
+- Defeated enemies drop power-ups.
+
+---
+
+### 4. **Bullet System**
+Handles both player and enemy bullets.
+
+#### Key Features:
+- **Player Bullets**: Fired on key press or auto-fire.
+- **Enemy Bullets**: Fired by `ShooterEnemy` at intervals.
+- **Collision Detection**: Checks for hits against enemies and the player.
+
+---
+
+### 5. **Power-Ups (Drops)**
+Collectible items that appear after defeating enemies.
+
+#### Types:
+- `health`: +1 life.
+- `ammo`: +50 bullets.
+- `enhanced`: Temporary bullet spread.
+- `fan`: Temporary diagonal shooting.
+
+---
+
+### 6. **Background System**
+Manages scrolling or static backgrounds.
+
+#### Key Methods:
+- `update`: Updates background position.
+- `draw`: Renders the background to the screen.
+
+---
+
+### 7. **Game Loop**
+The async `update` method handles:
+- Input processing
+- Movement and collision checks
+- Power-up collection
+- Level transitions
+- Rendering
+
+---
+
+## Configuration and Constants
+
+### Game Settings
 ```python
-class ShooterEnemy(pygame.sprite.Sprite):
-    def update(self, dt, bullets_group):
-        # Handle shooting logic
+PLAYER_SPEED = 300  # Pixels per second
+BULLET_SPEED = 500
+ENEMY_SPEED = 100
+ENEMY_SPAWN_INTERVAL = 2.0  # Seconds
+DROP_CHANCE = 0.3  # 30% chance for power-ups
+```
+
+### Colors
+```python
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+GRAY = (128, 128, 128)
+```
+
+### Power-Up Weights
+```python
+DROP_WEIGHTS = {
+    "health": 1,
+    "ammo": 2,
+    "enhanced": 1,
+    "fan": 1
+}
 ```
 
 ---
 
-### `Drop` and `Explosion`
-- `Drop`: Power-up items (e.g., health, ammo, enhanced abilities).
-- `Explosion`: Visual effect for enemy destruction.
+## Level System
+- **Level Files**: Text files in `./levels/` (e.g., `level1.txt`).
+- **Loading**: `discover_level_files()` finds and sorts level files.
+- **Progression**: `next_level_or_win()` transitions to the next level or ends the game.
 
 ---
 
-## Key Functions
-
-### `discover_level_files(level_dir=LEVELS_DIR)`
-- **Purpose**: Discovers level files in the specified directory.
-- **Output**: Sorted list of level file paths (e.g., `level1.txt`, `level2.txt`).
-
-### `main()`
-- **Purpose**: Entry point for the game.
-- **Usage**:
-  ```bash
-  python game.py --level 3
-  ```
-  Starts the game at level 3.
-
----
-
-## Configuration
-
-### Constants
-- **FPS**: Frame rate (controlled via `clock.tick(FPS)`).
-- **Colors**: `BLACK`, `WHITE`, `RED`, `GREEN`, etc., used for rendering.
-- **Power-up Timings**: `SAFE_ZONE_TAIL_MS`, `DROP_CHANCE`, etc.
-
-### Level Files
-- Located in `LEVELS_DIR` (default: `./levels`).
-- Format: Text files defining level structure (e.g., enemy positions, background segments).
-
----
-
-## Environment Variables
-- **LEVELS_DIR**: Directory containing level files (default: `./levels`).
-- **FPS**: Controls game speed (set in code).
+## Input Handling
+Supports multiple input types:
+- **Keyboard**: WASD or arrow keys for movement, SPACE for shooting.
+- **Mouse**: Click to shoot (optional).
+- **Touch**: Mobile-friendly controls via `TouchControls`.
 
 ---
 
 ## Usage Examples
 
-### Start the Game
+### Starting the Game
 ```bash
-python game.py
+python game.py --level 1
 ```
-Starts the game at level 1.
 
-### Specify a Level
-```bash
-python game.py --level 5
+### Level File Format
+Each `levelX.txt` defines enemy positions and patterns. Example:
 ```
-Starts the game at level 5.
+enemy1,100,200
+enemy2,300,150
+```
 
-### Controls
-- **Arrow Keys**: Move player.
-- **Spacebar**: Shoot.
-- **P**: Pause/resume.
-- **F**: Spawn a "fan" power-up at the player's position.
+### Power-Up Collection
+When the player collides with a power-up:
+```python
+# Example: Collecting a "health" drop
+self.player_sprite.lives = min(9, self.player_sprite.lives + 1)
+```
 
 ---
 
-## Key Game Mechanics
+## Key Functions
 
-### Power-Ups
-- **Enhanced**: Multi-shot bullets for a duration.
-- **Fan**: Diagonal shooting for a duration.
-- **Health**: Increases player lives.
-- **Ammo**: Adds bullets to the player's reserve.
+### `shoot(time, bullets_group)`
+Fires bullets from the player. Handles cooldown and ammo limits.
 
-### Safe Zone
-- Activated after all enemies are defeated.
-- Player must reach the safe zone to progress to the next level.
+### `damage(damage_amount)`
+Reduces player/enemy health. Returns `True` if the entity is destroyed.
 
-### Collision Detection
-- **Player vs. Enemies**: Triggers damage and explosions.
-- **Bullets vs. Enemies**: Destroys enemies and drops power-ups.
+### `grant_enhanced(now)`
+Activates the enhanced bullet spread for 5 seconds.
+
+### `grant_fan(now)`
+Activates diagonal shooting for 5 seconds.
 
 ---
 
-## Code Structure Highlights
-
-### Game Loop Flow
-1. **Event Handling**: Processes input (keyboard, quit).
-2. **State Updates**: Moves sprites, checks collisions, updates timers.
-3. **Rendering**: Draws background, sprites, and HUD.
-
-### Entity Management
-- **Enemies**: Updated via `update(dt)` methods.
-- **Bullets**: Managed as sprite groups (`player_bullets`, `enemy_bullets`).
-- **Power-Ups**: Spawned randomly on enemy destruction.
+## Environment Variables
+- `LEVELS_DIR`: Directory containing level files (default: `./levels/`).
 
 ---
 
 ## Dependencies
-- **Pygame**: For rendering and event handling.
-- **Standard Libraries**: `time`, `random`, `os`, `glob` for file management and timing.
+- `pygame`: For rendering and input handling.
+- `asyncio`: For async game loop.
+- `glob`: For discovering level files.
+- `random`: For power-up spawning.
 
 ---
 
-## Example Level File (`level1.txt`)
-```txt
-# Enemy positions and types
-enemy1: type=shooter, x=100, y=50
-enemy2: type=basic, x=300, y=100
+## File Structure (Repository Context)
+```
+game.py
+levels/
+  level1.txt
+  level2.txt
+  ...
+utils.py  # (Assumed helper functions)
 ```
 
 ---
 
-## Notes
-- **Performance**: Uses `pygame.sprite.Group` for efficient collision detection.
-- **Extensibility**: New enemy types or power-ups can be added by subclassing existing classes.
-- **Debug Mode**: Enabled via `F1` key, showing debug HUD (enemy counts, etc.).
+## Future Improvements
+- Add sound effects and music.
+- Implement more enemy types and boss battles.
+- Add a pause menu and settings screen.
+- Optimize power-up spawning logic.
+
+---
+
+This documentation provides a high-level overview of the game's architecture, key components, and configuration. For deeper insights, explore the source code for specific implementations.
 
 #### Source
 
 ```python
 #!/usr/bin/env python3
 from __future__ import annotations
-import os, sys, time, math, random, glob
+import os, sys, time, math, random, glob, asyncio
 import pygame
+
 WIDTH, HEIGHT = 800, 600
 FPS = 60
 PLAYER_SPEED = 300.0
@@ -2418,11 +483,38 @@ PLAYER_START_LIVES = 5
 INVULN_AFTER_DEATH = 2.0
 ENHANCED_WEAPON_DURATION = 10.0
 
+# ---- On-screen controls (thumbstick + fire button) ----
+JOY_BASE_POS = (120, HEIGHT - 120)   # left-bottom
+JOY_BASE_R   = 35
+JOY_KNOB_R   = 16
+JOY_DEADZONE = 0.12                  # ignore tiny jitters
+
+FIRE_POS     = (WIDTH - 120, HEIGHT - 120)  # right-bottom
+FIRE_R       = 56
+FIRE_COLOR   = (255, 200, 80)
+UI_ALPHA     = 140                   # transparency for UI widgets
+_UI_BOTTOM_MARGIN = 60            # distance from bottom edge
+_UI_SIDE_MARGIN   = 90            # distance from left/right edge
+
+JOY_BASE_POS = ( _UI_SIDE_MARGIN, HEIGHT - _UI_BOTTOM_MARGIN )
+FIRE_POS     = ( WIDTH - _UI_SIDE_MARGIN, HEIGHT - _UI_BOTTOM_MARGIN )
+FIRE_R       = 28                 # was 56
+FIRE_COLOR   = (255, 200, 80)
+
 # Big enemy sizing (relative guarantees)
 BIG_MIN_SCALE_VS_SHOOTER = 1.8
 BIG_PADDING = 0.92
+# --- BigEnemy safety caps (add near other BIG_* constants) ---
 BIG_MIN_ABS_W = 80
 BIG_MIN_ABS_H = 60
+BIG_MAX_ABS_W = int(WIDTH * 0.70)   # prevent skyscraper-wide bosses
+BIG_MAX_ABS_H = int(HEIGHT * 0.55)  # prevent skyscraper-tall bosses
+
+# Only allow big enemies when the letter is explicitly 'B'
+ONLY_EXPLICIT_BOSS = True
+
+# Optional spawn debug
+DEBUG_SPAWN = False
 
 ENEMY_BASE_SPEED = 120.0
 
@@ -2447,11 +539,24 @@ DROP_WEIGHTS = {"health": 1, "ammo": 1, "enhanced": 2, "fan": 2}
 SAFE_ZONE_TAIL_MS = 5000
 WHITE=(255,255,255); BLACK=(0,0,0); GREEN=(0,220,0); RED=(220,40,40); YELLOW=(250,220,80); BLUE=(60,160,255); GRAY=(100,100,100)
 
+# Web vs desktop
+IS_WEB = (sys.platform == "emscripten")
 
-BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
-ASSETS_DIR = os.path.join(BASE_DIR, "assets")
-LEVELS_DIR = os.path.join(BASE_DIR, "levels")
+# Paths: absolute on desktop, relative on web
+if IS_WEB:
+    BASE_DIR   = ""
+    ASSETS_DIR = "assets"
+    LEVELS_DIR = "levels"
+else:
+    BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
+    ASSETS_DIR = os.path.join(BASE_DIR, "assets")
+    LEVELS_DIR = os.path.join(BASE_DIR, "levels")
 
+async def sleep_ms(ms: int):
+    if IS_WEB:
+        await asyncio.sleep(ms / 1000.0)
+    else:
+        pygame.time.delay(ms)
 
 def load_image(path: str, fallback_size=(24,24), color=(200,200,200)):
     if os.path.exists(path):
@@ -2486,7 +591,7 @@ def load_explosion_frames(folder="assets", prefix="explosion_", count=6):
 
 def load_level_grid(path: str) -> list[str]:
     with open(path, "r", encoding="utf-8") as f:
-        lines = [line.rstrip("\n") for line in f]
+        lines = [line.rstrip("\\n") for line in f]
     maxw = max((len(l) for l in lines), default=0)
     norm = [(l + " " * max(0, maxw - len(l)))[:maxw] for l in lines]
     return norm
@@ -2499,7 +604,7 @@ def connected_components(grid: list[str]) -> list[dict]:
     for r in range(R):
         for c in range(C):
             ch = grid[r][c]
-            if ch not in (" ", ".", "\t") and not visited[r][c]:
+            if ch not in (" ", ".", "\\t") and not visited[r][c]:
                 stack=[(r,c)]; visited[r][c]=True; cells=[]
                 while stack:
                     rr,cc=stack.pop(); cells.append((rr,cc))
@@ -2514,8 +619,164 @@ def connected_components(grid: list[str]) -> list[dict]:
     return comps
 
 # ------------ Scrolling background --------------
+def _ui_positions():
+    # recompute every draw in case of resize (pygbag can rescale canvas)
+    joy_pos = (_UI_SIDE_MARGIN, HEIGHT - _UI_BOTTOM_MARGIN)
+    fire_pos = (WIDTH - _UI_SIDE_MARGIN, HEIGHT - _UI_BOTTOM_MARGIN)
+    return joy_pos, fire_pos
+
+class TouchControls:
+    """
+    Dual-input (mouse + multitouch) virtual joystick + fire button.
+    Works on desktop and pygbag. Keeps separate pointer IDs so two-finger
+    control is reliable on mobile.
+    """
+    def __init__(self):
+        # pointer_id -> where it started and what it's controlling
+        self.active = {}  # {id: {"kind":"joy"/"fire", "start":(x,y)}}
+        self.joy_vec = (0.0, 0.0)
+        self.fire_held = False
+
+        # prebuild UI surfaces
+        self._joy_base = pygame.Surface((JOY_BASE_R*2, JOY_BASE_R*2), pygame.SRCALPHA)
+        self._joy_knob = pygame.Surface((JOY_KNOB_R*2, JOY_KNOB_R*2), pygame.SRCALPHA)
+        self._fire_surf = None  # built in draw()
+        pygame.draw.circle(self._joy_base, (255,255,255,UI_ALPHA), (JOY_BASE_R, JOY_BASE_R), JOY_BASE_R, 2)
+        pygame.draw.circle(self._joy_knob, (255,255,255,UI_ALPHA), (JOY_KNOB_R, JOY_KNOB_R), JOY_KNOB_R)
+
+    # ------- helpers -------
+    @staticmethod
+    def _dist(ax, ay, bx, by):
+        dx, dy = ax-bx, ay-by
+        return math.hypot(dx, dy)
+
+    def _which_zone(self, x, y):
+        joy_pos, fire_pos = _ui_positions()
+        # fire first so taps near RH side don't grab stick
+        if self._dist(x, y, *fire_pos) <= 28:  # FIRE_R
+            return "fire"
+        if self._dist(x, y, *joy_pos) <= JOY_BASE_R:
+            return "joy"
+        return None
+
+    def _update_joy_from(self, x, y):
+        joy_pos, _ = _ui_positions()
+        dx = x - joy_pos[0]
+        dy = y - joy_pos[1]
+        # clamp to circle
+        mag = math.hypot(dx, dy)
+        if mag > 0:
+            nx = dx / max(1e-6, JOY_BASE_R)
+            ny = dy / max(1e-6, JOY_BASE_R)
+            # stick vector normalized to [-1,1] within base radius
+            l = math.hypot(nx, ny)
+            if l > 1.0:
+                nx /= l; ny /= l
+        else:
+            nx = ny = 0.0
+        # deadzone
+        if math.hypot(nx, ny) < JOY_DEADZONE:
+            nx = ny = 0.0
+        self.joy_vec = (max(-1.0, min(1.0, nx)), max(-1.0, min(1.0, ny)))
+        # Convenience: single-entry dispatcher so Game can just forward events
+    def handle_event(self, e):
+        if e.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION):
+            self.handle_mouse_event(e)
+        elif e.type in (pygame.FINGERDOWN, pygame.FINGERMOTION, pygame.FINGERUP):
+            self.handle_finger_event(e)
+
+    # Back-compat with your Game.update() calls
+    def get_vector(self):
+        jx, jy = self.joy_vec
+        return pygame.Vector2(jx, jy)
+
+    def is_firing(self):
+        return self.fire_held
+    # ------- public API for events -------
+    def handle_mouse_event(self, e):
+        # Treat mouse as pointer id = -1
+        if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+            x, y = e.pos
+            k = self._which_zone(x, y)
+            if k:
+                self.active[-1] = {"kind": k}
+                if k == "joy":
+                    self._update_joy_from(x, y)
+                elif k == "fire":
+                    self.fire_held = True
+
+        elif e.type == pygame.MOUSEMOTION:
+            if -1 in self.active and self.active[-1]["kind"] == "joy":
+                self._update_joy_from(*e.pos)
+
+        elif e.type == pygame.MOUSEBUTTONUP and e.button == 1:
+            if -1 in self.active:
+                kind = self.active[-1]["kind"]
+                del self.active[-1]
+                if kind == "joy":
+                    self.joy_vec = (0.0, 0.0)
+                elif kind == "fire":
+                    self.fire_held = False
+
+    def handle_finger_event(self, e):
+        # e.x, e.y are normalized [0..1] in pygbag
+        pid = int(e.finger_id) if hasattr(e, "finger_id") else int(e.touch_id)
+        x = int(e.x * WIDTH)
+        y = int(e.y * HEIGHT)
+
+        if e.type == pygame.FINGERDOWN:
+            k = self._which_zone(x, y)
+            if k:
+                self.active[pid] = {"kind": k}
+                if k == "joy":
+                    self._update_joy_from(x, y)
+                elif k == "fire":
+                    self.fire_held = True
+
+        elif e.type == pygame.FINGERMOTION:
+            if pid in self.active and self.active[pid]["kind"] == "joy":
+                self._update_joy_from(x, y)
+
+        elif e.type == pygame.FINGERUP:
+            if pid in self.active:
+                kind = self.active[pid]["kind"]
+                del self.active[pid]
+                if kind == "joy":
+                    self.joy_vec = (0.0, 0.0)
+                elif kind == "fire":
+                    self.fire_held = False
+
+    # ------- polling -------
+    def get_axis(self):
+        # returns (x, y) in [-1..1]
+        return self.joy_vec
+
+    def is_fire(self):
+        return self.fire_held
+
+    # ------- draw -------
+    def draw(self, surf):
+        joy_pos, fire_pos = _ui_positions()
+        # draw fire button (build once at scale)
+        if self._fire_surf is None:
+            r = 28
+            s = pygame.Surface((r*2, r*2), pygame.SRCALPHA)
+            pygame.draw.circle(s, (255, 200, 80, UI_ALPHA), (r, r), r)
+            pygame.draw.circle(s, (255, 255, 255, UI_ALPHA), (r, r), r, 2)
+            self._fire_surf = s
+        # stick base
+        surf.blit(self._joy_base, (joy_pos[0] - JOY_BASE_R, joy_pos[1] - JOY_BASE_R))
+        # knob at current vector position, scaled within base radius
+        jx, jy = self.joy_vec
+        knob_x = int(joy_pos[0] + jx * (JOY_BASE_R - JOY_KNOB_R))
+        knob_y = int(joy_pos[1] + jy * (JOY_BASE_R - JOY_KNOB_R))
+        surf.blit(self._joy_knob, (knob_x - JOY_KNOB_R, knob_y - JOY_KNOB_R))
+        # fire
+        surf.blit(self._fire_surf, (fire_pos[0] - self._fire_surf.get_width()//2,
+                                    fire_pos[1] - self._fire_surf.get_height()//2))
+
 class ScrollingBackground:
-    def __init__(self, segments, speed=100, loop=True):
+    def __init__(self, segments, speed=50, loop=True):
         self.segs = segments[:] if segments else [pygame.Surface((WIDTH, HEIGHT))]
         self.speed = float(speed)
         self.loop = loop
@@ -2607,18 +868,13 @@ def load_level_background(level_number: int) -> ScrollingBackground:
         segs.append(tile)
         print(f"[BG] Level {level_number}: no PNGs found, using fallback tile")
 
-    #base_speed = 40 + (level_number - 1) * 5
-    base_speed = 50
-
+    base_speed = 50  # tweak speed here
     bg = ScrollingBackground(segs, speed=base_speed, loop=True)
-    # Reset scroll at start
-    bg.offset = 0
-    print(f"[BG] Level {level_number}: loaded {len(segs)} segment(s):")
-    for i, p in enumerate(seg_paths or ["<fallback>"], 1):
-        print(f"   {i:02d}: {p}")
-    print(f"   total_h={bg.total_h}px, speed={base_speed}px/s")
+    # Start with the last part visible to avoid black at boot
+    if bg.total_h > 0:
+        bg.offset = (bg.total_h - HEIGHT) % bg.total_h
+    print(f"[BG] Level {level_number}: loaded {len(segs)} segment(s) total_h={bg.total_h}px speed={base_speed}px/s")
     return bg
-
 
 # ------------ Entities --------------
 class Bullet(pygame.sprite.Sprite):
@@ -2743,15 +999,41 @@ class KamikazeEnemy(Enemy):
 
 class BigEnemy(Enemy):
     def __init__(self, x, y, base_img, w_cells, h_cells, cell_w, cell_h, shooter_img):
-        target_w = max(int(w_cells * cell_w * BIG_PADDING), BIG_MIN_ABS_W)
-        target_h = max(int(h_cells * cell_h * BIG_PADDING), BIG_MIN_ABS_H)
+        # Desired bbox from component
+        bbox_w = max(int(w_cells * cell_w * BIG_PADDING), BIG_MIN_ABS_W)
+        bbox_h = max(int(h_cells * cell_h * BIG_PADDING), BIG_MIN_ABS_H)
+
+        # Enforce caps
+        bbox_w = min(bbox_w, BIG_MAX_ABS_W)
+        bbox_h = min(bbox_h, BIG_MAX_ABS_H)
+
+        # Ensure bigger than a shooter, still within caps
         sw, sh = shooter_img.get_width(), shooter_img.get_height()
-        target_w = max(target_w, int(sw * BIG_MIN_SCALE_VS_SHOOTER))
-        target_h = max(target_h, int(sh * BIG_MIN_SCALE_VS_SHOOTER))
+        bbox_w = max(bbox_w, int(sw * BIG_MIN_SCALE_VS_SHOOTER))
+        bbox_h = max(bbox_h, int(sh * BIG_MIN_SCALE_VS_SHOOTER))
+        bbox_w = min(bbox_w, BIG_MAX_ABS_W)
+        bbox_h = min(bbox_h, BIG_MAX_ABS_H)
+
+        # Preserve aspect ratio of the base image
+        bw, bh = base_img.get_width(), base_img.get_height()
+        if bw <= 0 or bh <= 0:
+            target_w, target_h = bbox_w, bbox_h
+        else:
+            scale = min(bbox_w / bw, bbox_h / bh)
+            target_w = max(1, int(bw * scale))
+            target_h = max(1, int(bh * scale))
+
         img2 = pygame.transform.smoothscale(base_img, (target_w, target_h))
+
+        # HP scaled to component area, with a floor
         hp = max(6, 4 + (w_cells * h_cells) // 2)
         super().__init__(x, y, img2, hp=hp)
         self.vy = ENEMY_BASE_SPEED * 0.75
+
+        # keep inside screen horizontally
+        if self.rect.left < 0: self.rect.left = 0
+        if self.rect.right > WIDTH: self.rect.right = WIDTH
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, img):
@@ -2821,29 +1103,49 @@ class LevelTimeline:
             self.done_spawning = True; self.all_spawned_time = pygame.time.get_ticks()
     def _spawn_event(self, ev, enemies_group, player_ref, enemy_bullets):
         letter = ev.letter.upper()
-        if ev.w_cells * ev.h_cells > 1 or letter == "B":
-            e = BigEnemy(ev.cx, ev.cy, self.img_big, ev.w_cells, ev.h_cells, self.cell_w, self.cell_h, shooter_img=self.img_shooter)
-        elif letter == "S":
+
+        # Safety: optionally *only* spawn BigEnemy when the map letter is 'B'
+        if ONLY_EXPLICIT_BOSS and letter != "B":
+            # Not a boss; fall through to regular types below
+            pass
+        elif letter == "B":
+            # Guard against absurd components (just in case)
+            if ev.w_cells > 12 or ev.h_cells > 12:
+                if DEBUG_SPAWN:
+                    print(f"[SPAWN] Suppressing giant BigEnemy {ev.w_cells}x{ev.h_cells} at row {ev.min_row}")
+                e = Enemy(ev.cx, ev.cy, self.img_shooter, hp=2)
+            else:
+                e = BigEnemy(
+                    ev.cx, ev.cy,
+                    self.img_big,
+                    ev.w_cells, ev.h_cells,
+                    self.cell_w, self.cell_h,
+                    shooter_img=self.img_shooter,
+                )
+                enemies_group.add(e)
+                if DEBUG_SPAWN:
+                    print(f"[SPAWN] BigEnemy {ev.w_cells}x{ev.h_cells} at row {ev.min_row}, center=({ev.cx},{ev.cy})")
+                return  # done
+
+        # Normal spawns
+        if letter == "S":
             e = ShooterEnemy(ev.cx, ev.cy, self.img_shooter); e.target_ref = player_ref
         elif letter == "K":
             e = KamikazeEnemy(ev.cx, ev.cy, self.img_kamikaze); e.target_ref = player_ref
         else:
             e = Enemy(ev.cx, ev.cy, self.img_shooter, hp=2)
+
         enemies_group.add(e)
+
 
 class Game:
     def __init__(self, level_paths: list[str]):
         pygame.init()
+        # Use default font (works on web)
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT)); pygame.display.set_caption("1942-lite")
-        self.clock = pygame.time.Clock(); self.font = pygame.font.SysFont("consolas", 18); self.bigfont = pygame.font.SysFont("consolas", 28)
+        self.clock = pygame.time.Clock(); self.font    = pygame.font.Font(None, 18); self.bigfont = pygame.font.Font(None, 28)
         self.running = True; self.paused = False; self.debug = False
-        # self.assets = {
-        #     "player": load_image(os.path.join("assets","player.png"), (28,28), (70,160,255)),
-        #     "enemy_shooter": load_image(os.path.join("assets","enemy_shooter.png"), (36,28), (210,60,60)),
-        #     "enemy_kamikaze": load_image(os.path.join("assets","enemy_kamikaze.png"), (30,26), (255,140,30)),
-        #     "enemy_big": load_image(os.path.join("assets","enemy_big.png"), (54,42), (180,60,200)),
-        #     "explosion_frames": load_explosion_frames("assets", "explosion_", 6),
-        # }
+        self.controls = TouchControls()
         self.assets = {
             "player":         load_image(os.path.join(ASSETS_DIR, "player.png"),         (28,28), (70,160,255)),
             "enemy_shooter":  load_image(os.path.join(ASSETS_DIR, "enemy_shooter.png"),  (36,28), (210,60,60)),
@@ -2859,7 +1161,6 @@ class Game:
         self.bg = None
         self.load_level(self.level_paths[self.level_index])
         self.safe_zone_active = False; self.safe_zone_y = HEIGHT - 80
-        
 
     @property
     def player_sprite(self): return self.player.sprite
@@ -2878,23 +1179,32 @@ class Game:
             self.bg.offset = (self.bg.total_h - HEIGHT) % self.bg.total_h
 
         print(f"[BG] Level {lvl_num}: segments={len(self.bg.segs)} total_h={self.bg.total_h}")
-   
 
     def spawn_safe_zone_if_ready(self):
         if not self.timeline.done_spawning: return
         if self.timeline.all_spawned_time is not None:
             if pygame.time.get_ticks() - self.timeline.all_spawned_time >= SAFE_ZONE_TAIL_MS: self.safe_zone_active = True
 
-    def run(self):
+    async def run(self):
         while self.running:
             dt = self.clock.tick(FPS)/1000.0; dt_ms = dt*1000.0
             self.handle_events()
-            if not self.paused: self.update(dt, dt_ms)
+            if not self.paused:
+                await self.update(dt, dt_ms)
             self.render()
-        pygame.quit()
+
+            # Important for pygbag: let the browser breathe
+            if IS_WEB:
+                await asyncio.sleep(0)
+
+        # On desktop, quit pygame at the end
+        if not IS_WEB:
+            pygame.quit()
 
     def handle_events(self):
         for e in pygame.event.get():
+            self.controls.handle_event(e)
+
             if e.type == pygame.QUIT: self.running=False
             elif e.type == pygame.KEYDOWN:
                 if e.key in (pygame.K_ESCAPE, pygame.K_q): self.running=False
@@ -2903,13 +1213,41 @@ class Game:
                 elif e.key == pygame.K_f:
                     px, py = self.player_sprite.rect.center
                     self.drops.add(Drop(px, py - 20, "fan"))
+            
+            elif e.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION):
+                self.controls.handle_mouse_event(e)
+
+            # --- finger -> touch controls (pygbag/mobile) ---
+            elif e.type in (pygame.FINGERDOWN, pygame.FINGERMOTION, pygame.FINGERUP):
+                self.controls.handle_finger_event(e)
+
         keys = pygame.key.get_pressed()
         if not self.paused:
             self.player_sprite.update(0, keys)
             if keys[pygame.K_SPACE]: self.player_sprite.shoot(time.perf_counter(), self.player_bullets)
 
-    def update(self, dt, dt_ms):
+    async def update(self, dt, dt_ms):
         keys = pygame.key.get_pressed(); self.player_sprite.update(dt, keys)
+        ax, ay = self.controls.get_axis()   # [-1..1]
+        if ax or ay:
+            self.player_sprite.rect.x += int(ax * PLAYER_SPEED * dt)
+            self.player_sprite.rect.y += int(ay * PLAYER_SPEED * dt)
+            self.player_sprite.rect.clamp_ip(pygame.Rect(0, 0, WIDTH, HEIGHT))
+
+        # Virtual fire (hold to auto-fire at your normal cooldown)
+        if self.controls.is_fire():
+            self.player_sprite.shoot(time.perf_counter(), self.player_bullets)
+
+        move = self.controls.get_vector() * PLAYER_SPEED
+        if move.length_squared() > 0:
+            self.player_sprite.rect.x += int(move.x * dt)
+            self.player_sprite.rect.y += int(move.y * dt)
+            self.player_sprite.rect.clamp_ip(pygame.Rect(0,0,WIDTH,HEIGHT))
+
+        # --- Touch fire button ---
+        if self.controls.is_firing():
+            self.player_sprite.shoot(time.perf_counter(), self.player_bullets)
+
         self.timeline.update(dt_ms, self.enemies, self.player_sprite, self.enemy_bullets); self.spawn_safe_zone_if_ready()
         for e in list(self.enemies):
             if isinstance(e, ShooterEnemy): e.update(dt, bullets_group=self.enemy_bullets)
@@ -2940,7 +1278,7 @@ class Game:
                 for b in list(self.enemy_bullets):
                     if self.player_sprite.rect.colliderect(b.rect): b.kill()
                 self.fx.add(Explosion(px, py, self.assets["explosion_frames"]))
-                if not alive: self.game_over()
+                if not alive: await self.game_over()
                 else: self.player_sprite.rect.center = (px, py)
         got = pygame.sprite.spritecollide(self.player_sprite, self.drops, dokill=True)
         now = time.perf_counter()
@@ -2954,30 +1292,36 @@ class Game:
             elif d.kind == "fan":
                 self.player_sprite.grant_fan(now)
 
-        if self.safe_zone_active and self.player_sprite.rect.top <= self.safe_zone_y: self.next_level_or_win()
+        if self.safe_zone_active and self.player_sprite.rect.top <= self.safe_zone_y: await self.next_level_or_win()
 
-    def next_level_or_win(self):
+    async def next_level_or_win(self):
         self.level_index += 1
         if self.level_index < len(self.level_paths):
-            self.banner("LEVEL CLEARED!", (80,220,80), delay=1200)
+            await self.banner("LEVEL CLEARED!", (80,220,80), delay=1200)
             self.load_level(self.level_paths[self.level_index])
             self.player_sprite.rect.center = (WIDTH//2, HEIGHT-70); self.player_sprite.invuln_t = 1.0
-        else: self.win_and_exit()
+        else:
+            await self.win_and_exit()
 
-    def game_over(self):
+    async def game_over(self):
         surf = self.screen; surf.fill(BLACK)
         txt = self.bigfont.render("GAME OVER", True, RED); surf.blit(txt, txt.get_rect(center=(WIDTH//2, HEIGHT//2)))
-        pygame.display.flip(); pygame.time.delay(2200); self.running = False
+        pygame.display.flip()
+        await sleep_ms(2200)
+        self.running = False
 
-    def win_and_exit(self):
+    async def win_and_exit(self):
         surf = self.screen; surf.fill(BLACK)
         txt = self.bigfont.render("SAFE ZONE REACHED! YOU WIN!", True, GREEN); surf.blit(txt, txt.get_rect(center=(WIDTH//2, HEIGHT//2)))
-        pygame.display.flip(); pygame.time.delay(2200); self.running = False
+        pygame.display.flip()
+        await sleep_ms(2200)
+        self.running = False
 
-    def banner(self, text, color, delay=1000):
+    async def banner(self, text, color, delay=1000):
         surf = self.screen; surf.fill(BLACK)
         b = self.bigfont.render(text, True, color); surf.blit(b, b.get_rect(center=(WIDTH//2, HEIGHT//2)))
-        pygame.display.flip(); pygame.time.delay(delay)
+        pygame.display.flip()
+        await sleep_ms(delay)
 
     def render(self):
         self.screen.fill(BLACK)
@@ -2986,7 +1330,10 @@ class Game:
             pygame.draw.rect(self.screen, (40,120,40), (0, self.safe_zone_y, WIDTH, HEIGHT - self.safe_zone_y))
         self.enemies.draw(self.screen); self.player_bullets.draw(self.screen); self.enemy_bullets.draw(self.screen); self.fx.draw(self.screen)
         if int(self.player_sprite.invuln_t * 10) % 2 == 0 or self.player_sprite.invuln_t <= 0: self.screen.blit(self.player_sprite.image, self.player_sprite.rect)
-        self.drops.draw(self.screen); self.draw_hud(self.screen); pygame.display.flip()
+        self.drops.draw(self.screen); self.draw_hud(self.screen); 
+        
+        self.controls.draw(self.screen)
+        pygame.display.flip()
 
     def draw_hud(self, surf):
         lives_s = self.font.render(f"Lives: {max(0,self.player_sprite.lives)}", True, WHITE); surf.blit(lives_s, (8, 8))
@@ -3012,7 +1359,7 @@ def discover_level_files(level_dir=LEVELS_DIR):  # default now absolute
     files.sort(key=lambda x: (x[0], x[1]))
     return [p for _,p in files]
 
-def main():
+async def main_async():
     import argparse
     parser = argparse.ArgumentParser(description="1942-lite shooter")
     parser.add_argument("--level", type=int, default=1, help="Level number to start from (default: 1)")
@@ -3020,7 +1367,7 @@ def main():
 
     level_files = discover_level_files()
     if not level_files:
-        print("No levels found in ./levels (expected level1.txt).");
+        print("No levels found in ./levels (expected level1.txt).")
         sys.exit(1)
 
     start_index = max(0, args.level - 1)
@@ -3028,10 +1375,11 @@ def main():
         print(f"Level {args.level} not found. Available: 1–{len(level_files)}")
         sys.exit(1)
 
-    Game(level_files[start_index:]).run()
+    game = Game(level_files[start_index:])
+    await game.run()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main_async())
 
 ```
 
@@ -3041,77 +1389,76 @@ if __name__ == "__main__":
 
 # `requirements.txt` Documentation
 
+The `requirements.txt` file specifies the Python package dependencies required to run the project. It is used by `pip` to install all necessary libraries for development and execution.
+
+---
+
 ## Overview
-The `requirements.txt` file is a standard Python dependency declaration file used to specify the packages and versions required for a project. It is typically used with `pip` to install dependencies in a consistent environment.
+
+This file lists the external Python packages required by the game application. It ensures consistency across environments by pinning specific versions of dependencies.
 
 ---
 
-## File Content
-```txt
-pygame>=2.5.2
-```
+## Key Dependencies
 
-### Purpose
-This file ensures that the correct version of the `pygame` library is installed when setting up the project. It is critical for applications or games that rely on `pygame` for graphics, sound, input handling, and other multimedia operations.
+### 1. `pygame>=2.5.2`
+- **Purpose**: Core library for game development in Python.
+- **Features**:
+  - Graphics rendering
+  - Sound and music handling
+  - Input device support (keyboard, mouse, etc.)
+  - Collision detection
+- **Version**: Minimum version `2.5.2` (latest stable recommended).
 
----
-
-## Key Details
-
-### Dependency Specification
-- **Package**: `pygame`
-- **Version Constraint**: `>=2.5.2`  
-  This allows installation of version 2.5.2 or any newer compatible version. It ensures the project works with updates that do not break backward compatibility.
-
-### Relationship to Other Files
-- The repository contains multiple level configuration files (e.g., `level1.txt`, `level2.txt`), which may represent game levels or scenarios. These likely depend on `pygame` for rendering or interaction.
-- The `requirements.txt` ensures the correct `pygame` version is available to support these levels.
+### 2. `pygbag`
+- **Purpose**: Enables running Pygame applications in web browsers via WebAssembly (WASM).
+- **Features**:
+  - WebAssembly compilation for browser compatibility
+  - Integration with Pygame's API for web deployment
+- **Usage**: Required for building or running the game in a web environment.
 
 ---
 
 ## Usage Examples
 
 ### Install Dependencies
-To install the required packages, run:
 ```bash
 pip install -r requirements.txt
 ```
 
 ### Verify Installation
-After installation, verify the `pygame` version:
 ```bash
-pip show pygame
+pip show pygame pygbag
 ```
 
 ---
 
 ## Configuration Implications
 
-- **Version Compatibility**: If `pygame` is upgraded beyond 2.5.2, ensure the project's code is compatible with newer features or APIs. Breaking changes in major versions may require code adjustments.
-- **Environment Setup**: This file simplifies setup for developers and CI/CD pipelines by automating dependency installation.
+- **Environment Setup**: Ensure Python 3.x is installed. The project uses `asyncio`, so a modern Python version (3.7+) is required.
+- **Web Deployment**: `pygbag` is necessary for packaging the game as a web application. Without it, browser-based execution will fail.
+- **Version Compatibility**: The pinned version of `pygame` ensures stability. Upgrading may require testing for compatibility.
+
+---
+
+## Relationship with Other Files
+
+- **`main_async.py`**: Uses `pygbag` for async game loops and web deployment.
+- **`build/version.txt`**: Tracks the project version (0.9.2), separate from dependency versions.
+- **Game Logic**: Relies on `pygame` for all core mechanics (e.g., `PlayerSprite`, `Enemy`, bullet physics).
 
 ---
 
 ## Best Practices
-- **Pin Versions**: Always specify version constraints to avoid unexpected behavior from updates.
-- **Update Regularly**: Periodically check for newer `pygame` versions to benefit from bug fixes and features.
-- **Isolate Environments**: Use virtual environments (e.g., `venv`, `conda`) to manage dependencies separately for different projects.
 
----
-
-## Example Project Structure
-```
-/project-root
-  ├── requirements.txt
-  ├── level1.txt
-  ├── level2.txt
-  └── README.md
-```
-- The `requirements.txt` ensures `pygame` is available for scripts that read and process level files (e.g., `level1.txt`).
+- **Lock Versions**: Always use pinned versions in `requirements.txt` to avoid unexpected behavior from updates.
+- **Environment Isolation**: Use virtual environments (`venv`) to manage dependencies per project.
+- **Web Builds**: For web deployment, ensure `pygbag` is installed and configured correctly.
 
 #### Source
 
 ```
 pygame>=2.5.2
+pygbag
 
 ```
