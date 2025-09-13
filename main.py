@@ -10,6 +10,14 @@ PLAYER_BULLET_COOLDOWN = 0.15
 PLAYER_START_LIVES = 5
 INVULN_AFTER_DEATH = 2.0
 ENHANCED_WEAPON_DURATION = 10.0
+
+# Big enemy sizing (relative guarantees)
+BIG_MIN_SCALE_VS_SHOOTER = 1.8   # big enemy must be at least 1.8x shooter sprite width/height
+BIG_PADDING = 0.92               # fill 92% of the component's cell bounding box
+BIG_MIN_ABS_W = 80               # never smaller than 80x60 px even for small clusters / tiny sprites
+BIG_MIN_ABS_H = 60
+
+
 ENEMY_BASE_SPEED = 120.0
 KAMIKAZE_SPEED = 160.0
 ENEMY_BULLET_SPEED = 300.0
@@ -160,11 +168,24 @@ class KamikazeEnemy(Enemy):
         if self.rect.top > HEIGHT or self.rect.right < 0 or self.rect.left > WIDTH: self.kill()
 
 class BigEnemy(Enemy):
-    def __init__(self, x, y, img, w_cells, h_cells):
-        scale_x = max(1, int(w_cells*24)); scale_y = max(1, int(h_cells*20))
-        img2 = pygame.transform.smoothscale(img, (scale_x, scale_y))
-        hp = 4 + (w_cells * h_cells) // 2
-        super().__init__(x, y, img2, hp=hp); self.vy = ENEMY_BASE_SPEED * 0.75
+    def __init__(self, x, y, base_img, w_cells, h_cells, cell_w, cell_h, shooter_img):
+        # target size based on the component's cell-bbox
+        target_w = max(int(w_cells * cell_w * BIG_PADDING), BIG_MIN_ABS_W)
+        target_h = max(int(h_cells * cell_h * BIG_PADDING), BIG_MIN_ABS_H)
+
+        # ensure it's significantly larger than a shooter
+        sw, sh = shooter_img.get_width(), shooter_img.get_height()
+        target_w = max(target_w, int(sw * BIG_MIN_SCALE_VS_SHOOTER))
+        target_h = max(target_h, int(sh * BIG_MIN_SCALE_VS_SHOOTER))
+
+        # scale the base big image
+        img2 = pygame.transform.smoothscale(base_img, (target_w, target_h))
+
+        # HP scaled to area, but with a floor
+        hp = max(6, 4 + (w_cells * h_cells) // 2)
+        super().__init__(x, y, img2, hp=hp)
+        self.vy = ENEMY_BASE_SPEED * 0.75
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, img):
@@ -228,7 +249,13 @@ class LevelTimeline:
     def _spawn_event(self, ev, enemies_group, player_ref, enemy_bullets):
         letter = ev.letter.upper()
         if ev.w_cells * ev.h_cells > 1 or letter == "B":
-            e = BigEnemy(ev.cx, ev.cy, self.img_big, ev.w_cells, ev.h_cells)
+            e = BigEnemy(
+                ev.cx, ev.cy,
+                self.img_big,
+                ev.w_cells, ev.h_cells,
+                self.cell_w, self.cell_h,
+                shooter_img=self.img_shooter,
+            )
         elif letter == "S":
             e = ShooterEnemy(ev.cx, ev.cy, self.img_shooter)
         elif letter == "K":
@@ -384,11 +411,31 @@ def discover_level_files(level_dir="levels"):
     files.sort(key=lambda x: (x[0], x[1]))
     return [p for _,p in files]
 
+# def main():
+#     level_files = discover_level_files("levels")
+#     if not level_files:
+#         print("No levels found in ./levels (expected level1.txt)."); sys.exit(1)
+#     Game(level_files).run()
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="1942-lite shooter")
+    parser.add_argument("--level", type=int, default=1,
+                        help="Level number to start from (default: 1)")
+    args = parser.parse_args()
+
     level_files = discover_level_files("levels")
     if not level_files:
-        print("No levels found in ./levels (expected level1.txt)."); sys.exit(1)
-    Game(level_files).run()
+        print("No levels found in ./levels (expected level1.txt).")
+        sys.exit(1)
+
+    start_index = max(0, args.level - 1)
+    if start_index >= len(level_files):
+        print(f"Level {args.level} not found. Available: 1–{len(level_files)}")
+        sys.exit(1)
+
+    # Slice so Game sees only levels starting from chosen one
+    Game(level_files[start_index:]).run()
+
 
 if __name__ == "__main__":
     main()
