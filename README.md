@@ -1,10 +1,10 @@
-# 1942-lite
+# 1942
 
 A WWII top-down shooter built with Python and portable to the web using **pygbag**.
 
-## What is 1942-lite?
+## What is 1942?
 
-**1942-lite** is a modern, lightweight arcade shooter inspired by classic vertical scrollers. Pilot your plane through waves of enemy fighters, dodge bullets, collect power-ups, and reach the **Safe Zone** to clear each level. The game runs on desktop via **Pygame** and can be exported to the browser via **pygbag** (WASM), so it can be played without local installation.
+**1942** is a modern, lightweight arcade shooter inspired by classic vertical scrollers. Pilot your plane through waves of enemy fighters, dodge bullets, collect power-ups, and reach the **Safe Zone** to clear each level. The game runs on desktop via **Pygame** and can be exported to the browser via **pygbag** (WASM), so it can be played without local installation.
 
 ---
 
@@ -140,3 +140,4 @@ requirements.txt     # Dependencies
 **GNU General Public License v3.0**  
 
 See the [LICENSE](LICENSE) file for details.
+
