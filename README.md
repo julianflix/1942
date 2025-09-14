@@ -80,7 +80,7 @@ A WWII top-down shooter built with Python and portable to the web using **pygbag
 
 - **Levels**: Autodiscovered from `levels/` directory. Use `--level N` to select a specific level.
 - **Assets**: Place PNGs in `assets/` for custom visuals. Missing assets use simple fallbacks.
-- **Web Deployment**: Ensure `assets/` and `levels/` are hosted alongside the `build/web/` directory.
+- **Web Deployment**: Ensure `assets/` and `levels/` are hosted alongside the `build/web/` directory. Demo: https://julianflix.com/1942/index.html
 
 ---
 
@@ -138,4 +138,5 @@ requirements.txt     # Dependencies
 ## License
 
 **GNU General Public License v3.0**  
+
 See the [LICENSE](LICENSE) file for details.
